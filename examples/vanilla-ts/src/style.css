@@ -1,0 +1,698 @@
+/* Container and Layout */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #fafafa;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  margin-bottom: 32px;
+  padding: 32px 24px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header-logo {
+  flex-shrink: 0;
+}
+
+.omniloy-logo {
+  height: 48px;
+  width: auto;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.header-text h1 {
+  margin: 0 0 8px 0;
+  color: #1a1a1a;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.header-text p {
+  margin: 0;
+  color: #666;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+/* Sofia Component Wrapper */
+.sofia-wrapper {
+  margin-bottom: 32px;
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Debug Section */
+.debug-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.section-header h2 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Debug Panel */
+.debug-panel {
+  padding: 24px;
+}
+
+.control-group {
+  margin-bottom: 32px;
+}
+
+.control-group:last-child {
+  margin-bottom: 0;
+}
+
+.control-group h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #0056b3;
+  border-color: #0056b3;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #545b62;
+  border-color: #545b62;
+}
+
+.btn-outline {
+  background: white;
+  color: #6c757d;
+  border-color: #ddd;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Status Grid */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.status-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.status-value {
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.status-value.success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-value.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-value.neutral {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+/* Configuration Preview */
+.config-preview {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.config-item {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #495057;
+}
+
+.config-item:last-child {
+  margin-bottom: 0;
+}
+
+.config-item strong {
+  color: #212529;
+  min-width: 120px;
+  display: inline-block;
+}
+
+/* Data Sections */
+.data-section {
+  margin-bottom: 24px;
+}
+
+.data-section:last-child {
+  margin-bottom: 0;
+}
+
+.data-section h4 {
+  margin: 0 0 12px 0;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Tools Arguments Section */
+.tools-args-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.tools-args-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.tools-args-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.tools-args-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.tools-args-preview,
+.tools-args-info {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.tools-args-preview h4,
+.tools-args-info h4 {
+  margin: 0 0 12px 0;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ToolArgs Editor */
+.tools-args-editor {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.editor-header h4 {
+  margin: 0;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 12px;
+  font-weight: 500;
+  background: #f8d7da;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #f5c6cb;
+}
+
+.json-editor {
+  width: 100%;
+  min-height: 300px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  color: #495057;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.json-editor:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.json-editor.error {
+  border-color: #dc3545;
+  background: #fff5f5;
+}
+
+.editor-footer {
+  margin-top: 8px;
+}
+
+.editor-hint {
+  color: #6c757d;
+  font-style: italic;
+}
+
+.editor-section {
+  margin-bottom: 16px;
+}
+
+/* Title Editor Styles */
+.title-section {
+  margin-top: 16px;
+}
+
+.title-preview {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.title-display {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+  padding: 8px 0;
+  background: white;
+  border-radius: 4px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  margin-top: 8px;
+}
+
+.title-editor {
+  margin-top: 16px;
+}
+
+.title-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  color: #495057;
+  outline: none;
+  transition: border-color 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.title-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.title-input.error {
+  border-color: #dc3545;
+  background: #fff5f5;
+}
+
+.title-help {
+  margin-top: 8px;
+  color: #6c757d;
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* Chat Sources Editor Styles */
+.chat-sources-display {
+  font-size: 16px;
+  color: #333;
+  padding: 12px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  margin-top: 8px;
+  min-height: 20px;
+  font-style: italic;
+}
+
+.chat-sources-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  color: #495057;
+  outline: none;
+  transition: border-color 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.chat-sources-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.chat-sources-input.error {
+  border-color: #dc3545;
+  background: #fff5f5;
+}
+
+/* Patient Data Section */
+.patient-data-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.patient-data-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.patient-data-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.patient-data-section {
+  display: block;
+}
+
+.patient-data-preview {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.patient-data-preview h4 {
+  margin: 0 0 12px 0;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* PatientData Editor */
+.patient-data-editor {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+/* Expandable Section */
+.expandable-section {
+  margin-top: 16px;
+  border-top: 1px solid #e9ecef;
+  padding-top: 16px;
+}
+
+.expandable-section summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: #007bff;
+  padding: 8px 0;
+  user-select: none;
+}
+
+.expandable-section summary:hover {
+  color: #0056b3;
+}
+
+.expandable-section[open] summary {
+  margin-bottom: 12px;
+}
+
+.json-display {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 16px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #495057;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Toggle Control Styles */
+.config-header {
+  margin-bottom: 16px;
+}
+
+.config-header h3 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.config-section {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 20px;
+}
+
+.toggle-control {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-checkbox {
+  appearance: none;
+  width: 44px;
+  height: 24px;
+  background-color: #e0e0e0;
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-checkbox:checked {
+  background-color: #0066cc;
+}
+
+.toggle-checkbox::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-checkbox:checked::before {
+  transform: translateX(20px);
+}
+
+.toggle-text {
+  font-weight: 500;
+  color: #1a1a1a;
+  font-size: 16px;
+}
+
+.toggle-description {
+  color: #666;
+  font-size: 14px;
+  margin-left: 56px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .header-text h1 {
+    font-size: 24px;
+  }
+  
+  .header-text p {
+    font-size: 15px;
+  }
+  
+  .omniloy-logo {
+    height: 40px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .controls {
+    flex-direction: column;
+  }
+  
+  .btn {
+    justify-content: center;
+  }
+  
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .status-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .tools-args-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .tools-args-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .tools-args-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .patient-data-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .patient-data-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

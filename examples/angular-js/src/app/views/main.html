@@ -1,0 +1,262 @@
+<div class="container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-logo">
+        <img src="assets/logo.svg" alt="Omniloy" class="omniloy-logo" />
+      </div>
+      <div class="header-text">
+        <h1>Sofia SDK • Angular JS Integration</h1>
+        <p>Live development environment with dynamic configuration, real-time debugging tools, and complete SDK integration patterns</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sofia Component -->
+  <div class="sofia-wrapper">
+    <div class="sofia-container">
+      <sofia-sdk id="sofia-component"></sofia-sdk>
+    </div>
+  </div>
+
+  <!-- Debug Controls -->
+  <div class="debug-section">
+    <div class="section-header">
+      <h2>SDK Development Console</h2>
+    </div>
+    <div class="debug-panel">
+      <!-- Component Controls -->
+      <div class="control-group">
+        <h3>SDK Runtime Controls</h3>
+        <div class="controls">
+          <button type="button" ng-click="toggleIsOpen()" class="btn btn-primary">
+            <span ng-show="isOpen">Close Sofia SDK</span>
+            <span ng-show="!isOpen">Open Sofia SDK</span>
+          </button>
+          <button type="button" ng-click="getLastReport()" ng-disabled="!getLastReportFn" class="btn btn-secondary">
+            Get Last Report
+          </button>
+          <button type="button" ng-click="clearReports()" class="btn btn-outline">
+            Clear Reports
+          </button>
+          <button type="button" ng-click="refreshComponent()" class="btn btn-outline">
+            Reload SDK Component
+          </button>
+        </div>
+      </div>
+
+      <!-- Status Information -->
+      <div class="control-group">
+        <h3>SDK State Monitor</h3>
+        <div class="status-grid">
+          <div class="status-item">
+            <span class="status-label">Component Mounted:</span>
+            <span class="status-value success" ng-show="componentInitialized">Yes</span>
+            <span class="status-value danger" ng-show="!componentInitialized">No</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">SDK State:</span>
+            <span class="status-value success" ng-show="isOpen">Open</span>
+            <span class="status-value neutral" ng-show="!isOpen">Closed</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Report Handler:</span>
+            <span class="status-value success" ng-show="getLastReportFn">Available</span>
+            <span class="status-value danger" ng-show="!getLastReportFn">Not Available</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Event Count:</span>
+            <span class="status-value neutral">{{reports.length || 0}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simple Configuration -->
+      <div class="control-group">
+        <h3>Title Configuration</h3>
+        <div class="patient-data-header">
+          <div class="patient-data-controls">
+            <button type="button" ng-click="toggleTitleEditor()" class="btn btn-outline">
+              <span ng-show="isEditingTitle">Cancel</span>
+              <span ng-show="!isEditingTitle">Edit Title</span>
+            </button>
+            <button type="button" ng-show="isEditingTitle" ng-click="applyTitle()" class="btn btn-primary">
+              Apply Changes
+            </button>
+          </div>
+        </div>
+        
+        <div class="patient-data-section" ng-show="!isEditingTitle">
+          <div class="patient-data-preview">
+            <h4>Current Title:</h4>
+            <div class="title-display">{{sofiaTitle}}</div>
+          </div>
+        </div>
+
+        <div class="patient-data-editor" ng-show="isEditingTitle">
+          <div class="form-group">
+            <label for="title-input">Component Title:</label>
+            <input type="text" 
+                   id="title-input"
+                   ng-model="titleInput"
+                   placeholder="Enter Sofia component title"
+                   class="form-input">
+          </div>
+        </div>
+      </div>
+
+      <!-- OnlyChat Toggle -->
+      <div class="control-group">
+        <h3>Chat Configuration</h3>
+        <div class="patient-data-section">
+          <div class="toggle-container">
+            <label class="toggle-label">
+              <input type="checkbox" 
+                     ng-model="onlyChat"
+                     ng-change="updateOnlyChat()"
+                     class="toggle-input">
+              <span class="toggle-slider"></span>
+              Only Chat Mode
+            </label>
+            <p class="toggle-description">
+              When enabled, the component will only show the chat interface without additional tools
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ToolArgs Editor -->
+      <div class="control-group">
+        <div class="patient-data-header">
+          <h3>Tool Arguments Configuration</h3>
+          <div class="patient-data-controls">
+            <button type="button" ng-click="toggleToolArgsEditor()" class="btn btn-outline">
+              <span ng-show="isEditingToolArgs">Cancel</span>
+              <span ng-show="!isEditingToolArgs">Edit ToolArgs</span>
+            </button>
+            <button type="button" ng-show="isEditingToolArgs" ng-click="applyToolArgs()" ng-disabled="toolArgsError" class="btn btn-primary">
+              Apply Changes
+            </button>
+          </div>
+        </div>
+        
+        <div class="patient-data-section" ng-show="!isEditingToolArgs">
+          <div class="patient-data-preview">
+            <h4>Current ToolArgs:</h4>
+            <pre class="json-preview">{{toolsArgsObject | json}}</pre>
+          </div>
+        </div>
+
+        <div class="patient-data-editor" ng-show="isEditingToolArgs">
+          <div class="form-group">
+            <label for="toolargs-editor">Tool Arguments (JSON):</label>
+            <textarea id="toolargs-editor"
+                      ng-model="toolArgsString"
+                      ng-change="validateToolArgs()"
+                      placeholder="Enter valid JSON for tool arguments"
+                      rows="8"
+                      class="form-textarea"
+                      ng-class="{'error': toolArgsError}"></textarea>
+            <div ng-show="toolArgsError" class="error-message">{{toolArgsError}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Patient Data Editor -->
+      <div class="control-group">
+        <div class="patient-data-header">
+          <h3>Patient Data Configuration</h3>
+          <div class="patient-data-controls">
+            <button type="button" ng-click="togglePatientDataEditor()" class="btn btn-outline">
+              <span ng-show="isEditingPatientData">Cancel</span>
+              <span ng-show="!isEditingPatientData">Edit Patient Data</span>
+            </button>
+            <button type="button" ng-show="isEditingPatientData" ng-click="applyPatientData()" ng-disabled="patientDataError" class="btn btn-primary">
+              Apply Changes
+            </button>
+          </div>
+        </div>
+        
+        <div class="patient-data-section" ng-show="!isEditingPatientData">
+          <div class="patient-data-preview">
+            <h4>Current Patient Data:</h4>
+            <pre class="json-preview">{{patientData | json}}</pre>
+          </div>
+        </div>
+
+        <div class="patient-data-editor" ng-show="isEditingPatientData">
+          <div class="form-group">
+            <label for="patient-data-editor">Patient Data (JSON):</label>
+            <textarea id="patient-data-editor"
+                      ng-model="patientDataString"
+                      ng-change="validatePatientData()"
+                      placeholder="Enter valid JSON for patient data"
+                      rows="8"
+                      class="form-textarea"
+                      ng-class="{'error': patientDataError}"></textarea>
+            <div ng-show="patientDataError" class="error-message">{{patientDataError}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Sources Editor -->
+      <div class="control-group">
+        <div class="patient-data-header">
+          <h3>Chat Sources Configuration</h3>
+          <div class="patient-data-controls">
+            <button type="button" ng-click="toggleChatSourcesEditor()" class="btn btn-outline">
+              <span ng-show="isEditingChatSources">Cancel</span>
+              <span ng-show="!isEditingChatSources">Edit Chat Sources</span>
+            </button>
+            <button type="button" ng-show="isEditingChatSources" ng-click="applyChatSources()" ng-disabled="chatSourcesError" class="btn btn-primary">
+              Apply Changes
+            </button>
+          </div>
+        </div>
+        
+        <div class="patient-data-section" ng-show="!isEditingChatSources">
+          <div class="patient-data-preview">
+            <h4>Current Chat Sources:</h4>
+            <div class="chat-sources-list" ng-show="chatSources.length > 0">
+              <span ng-repeat="source in chatSources" class="chat-source-tag">{{source}}</span>
+            </div>
+            <div ng-show="chatSources.length === 0" class="empty-state">No chat sources configured</div>
+          </div>
+        </div>
+
+        <div class="patient-data-editor" ng-show="isEditingChatSources">
+          <div class="form-group">
+            <label for="chat-sources-editor">Chat Sources (comma-separated):</label>
+            <textarea id="chat-sources-editor"
+                      ng-model="chatSourcesString"
+                      ng-change="validateChatSources()"
+                      placeholder="Enter comma-separated chat sources (e.g., web, documents, knowledge-base)"
+                      rows="3"
+                      class="form-textarea"
+                      ng-class="{'error': chatSourcesError}"></textarea>
+            <div ng-show="chatSourcesError" class="error-message">{{chatSourcesError}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Display -->
+      <div class="control-group" ng-show="lastReport || retrievedReport">
+        <h3>SDK Event Monitor</h3>
+        
+        <div ng-show="lastReport" class="report-section">
+          <h4>Last Report Event:</h4>
+          <pre class="json-preview">{{lastReport | json}}</pre>
+        </div>
+        
+        <div ng-show="retrievedReport && retrievedReport !== 'Loading...'" class="report-section">
+          <h4>Retrieved Report:</h4>
+          <pre class="json-preview">{{retrievedReport | json}}</pre>
+        </div>
+        
+        <div ng-show="retrievedReport === 'Loading...'" class="loading-state">
+          Loading report...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

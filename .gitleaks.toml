@@ -1,0 +1,63 @@
+title = "gitleaks config for Sofia Examples"
+
+[extend]
+# useDefault will extend the base configuration with the default gitleaks config:
+# https://github.com/zricethezav/gitleaks/blob/master/config/gitleaks.toml
+useDefault = true
+
+[[rules]]
+description = "API Key"
+id = "api-key"
+regex = '''(?i)api[_-]?key[s]?\s*[:=]\s*['"]\w{10,}['"']'''
+keywords = ["apikey", "api_key", "api-key"]
+
+[[rules]]
+description = "Sofia API Key"
+id = "sofia-api-key"
+regex = '''(?i)sofia[_-]?api[_-]?key\s*[:=]\s*['"]\w{10,}['"']'''
+keywords = ["sofia", "apikey"]
+
+[[rules]]
+description = "Authorization Bearer Token"
+id = "bearer-token"
+regex = '''(?i)bearer\s+[a-zA-Z0-9\-_]{20,}'''
+keywords = ["bearer"]
+
+[[rules]]
+description = "Basic Auth"
+id = "basic-auth"
+regex = '''(?i)basic\s+[a-zA-Z0-9\-_]{20,}'''
+keywords = ["basic"]
+
+[allowlist]
+description = "Allowlist for example and template files"
+files = [
+    '''(.*?)(example|template|sample)(.*)''',
+    '''\.env\.example$''',
+    '''\.env\.template$''',
+    '''README\.md$''',
+    '''CHANGELOG\.md$''',
+    '''LICENSE$''',
+]
+
+paths = [
+    '''node_modules/''',
+    '''.git/''',
+    '''dist/''',
+    '''build/''',
+    '''.angular/''',
+]
+
+regexes = [
+    '''your-api-key''',
+    '''your-websocket-url''',
+    '''your-api-base-url''',
+    '''YOUR_API_KEY''',
+    '''YOUR_WEBSOCKET_URL''',
+    '''YOUR_API_BASE_URL''',
+    '''PROVIDED_BY_OMNILOY''',
+    '''REPLACE_WITH_''',
+    '''EXAMPLE_''',
+    '''TODO''',
+    '''CHANGEME''',
+]

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📧 Commercial Support
+    url: mailto:legal@omniloy.com
+    about: Contact Omniloy for commercial licensing and enterprise support
+  - name: 📖 Documentation
+    url: https://docs.omniloy.com/sofia-component
+    about: Visit our official documentation for comprehensive guides
+  - name: 🌐 Omniloy Website
+    url: https://omniloy.com
+    about: Learn more about Omniloy and our AI healthcare solutions

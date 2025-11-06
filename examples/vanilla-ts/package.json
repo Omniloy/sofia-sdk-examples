@@ -1,0 +1,21 @@
+{
+  "name": "sofia-vanilla-ts",
+  "private": true,
+  "version": "0.0.2",
+  "description": "Sofia SDK • Vanilla TypeScript Integration Example - Pure TypeScript implementation with dynamic configuration, comprehensive debugging tools, and professional SDK integration patterns",
+  "author": "Omniloy",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.3",
+    "vite": "^7.1.2"
+  },
+  "dependencies": {
+    "@omniloy/sofia-sdk": "0.0.2"
+  }
+}

@@ -1,0 +1,558 @@
+/* Modern professional styling for Angular JS Sofia SDK example */
+:root {
+  /* Color Palette */
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-secondary: #64748b;
+  --color-success: #16a34a;
+  --color-warning: #ea580c;
+  --color-danger: #dc2626;
+  --color-neutral: #6b7280;
+  
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-accent: #f1f5f9;
+  --bg-border: #e2e8f0;
+  
+  /* Text Colors */
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  
+  /* Layout */
+  --border-radius: 8px;
+  --border-radius-sm: 6px;
+  --border-radius-lg: 12px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+}
+
+/* Reset and Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  margin: 0;
+  padding: 0;
+  font-size: var(--font-size-base);
+}
+
+/* Container */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Header */
+.header {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--bg-border);
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.header-logo {
+  flex-shrink: 0;
+}
+
+.omniloy-logo {
+  height: 48px;
+  width: auto;
+}
+
+.header-text h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.header-text p {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 600px;
+}
+
+/* Sofia Component Container */
+.sofia-wrapper {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--bg-border);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.sofia-container {
+  padding: 0;
+}
+
+/* Debug Section */
+.debug-section {
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--bg-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.section-header {
+  background: var(--bg-accent);
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--bg-border);
+}
+
+.section-header h2 {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.debug-panel {
+  padding: 2rem;
+}
+
+/* Control Groups */
+.control-group {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--bg-border);
+}
+
+.control-group:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.control-group h3 {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border-radius: var(--border-radius);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+.btn-secondary {
+  background: var(--color-secondary);
+  color: white;
+  border-color: var(--color-secondary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #475569;
+  border-color: #475569;
+}
+
+.btn-outline {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--bg-border);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--bg-accent);
+  border-color: var(--color-secondary);
+}
+
+/* Status Grid */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--bg-accent);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--bg-border);
+}
+
+.status-label {
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.status-value {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-primary);
+}
+
+.status-value.success {
+  color: var(--color-success);
+  background: #dcfce7;
+}
+
+.status-value.danger {
+  color: var(--color-danger);
+  background: #fee2e2;
+}
+
+.status-value.neutral {
+  color: var(--color-neutral);
+  background: var(--bg-primary);
+}
+
+/* Patient Data Sections */
+.patient-data-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.patient-data-controls {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.patient-data-section {
+  background: var(--bg-accent);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--bg-border);
+  overflow: hidden;
+}
+
+.patient-data-preview {
+  padding: 1.5rem;
+}
+
+.patient-data-preview h4 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+}
+
+.title-display {
+  font-size: var(--font-size-xl);
+  font-weight: 500;
+  color: var(--color-primary);
+  padding: 1rem;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--bg-border);
+}
+
+.json-preview {
+  background: var(--bg-primary);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.chat-sources-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chat-source-tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+}
+
+.empty-state {
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--bg-border);
+}
+
+.loading-state {
+  color: var(--color-primary);
+  font-weight: 500;
+  padding: 1rem;
+  text-align: center;
+  background: var(--bg-primary);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--bg-border);
+}
+
+/* Patient Data Editor */
+.patient-data-editor {
+  padding: 1.5rem;
+  background: var(--bg-primary);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: 0.5rem;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--bg-border);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  font-family: inherit;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  line-height: 1.5;
+}
+
+.form-input.error,
+.form-textarea.error {
+  border-color: var(--color-danger);
+}
+
+.error-message {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+/* Toggle Component */
+.toggle-container {
+  padding: 1.5rem;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-primary);
+  user-select: none;
+}
+
+.toggle-input {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  appearance: none;
+  background: var(--color-neutral);
+  border-radius: 12px;
+  transition: background-color 0.2s ease-in-out;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggle-input:checked {
+  background: var(--color-primary);
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease-in-out;
+  pointer-events: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.toggle-input:checked + .toggle-slider {
+  transform: translateX(24px);
+}
+
+.toggle-description {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  margin: 0.5rem 0 0 0;
+  line-height: 1.5;
+}
+
+/* Report Sections */
+.report-section {
+  margin-bottom: 1.5rem;
+}
+
+.report-section:last-child {
+  margin-bottom: 0;
+}
+
+.report-section h4 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.75rem 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.75rem;
+  }
+  
+  .header {
+    padding: 1.5rem 0;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .header-text h1 {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .header-text p {
+    font-size: var(--font-size-base);
+  }
+  
+  .debug-panel {
+    padding: 1.5rem;
+  }
+  
+  .controls {
+    flex-direction: column;
+  }
+  
+  .patient-data-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .patient-data-controls {
+    justify-content: stretch;
+  }
+  
+  .patient-data-controls .btn {
+    flex: 1;
+  }
+  
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Angular JS specific classes */
+div[ng-view] {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: auto;
+}
+
+/* Additional Angular JS compatibility */
+.ng-hide {
+  display: none !important;
+}

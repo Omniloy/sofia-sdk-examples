@@ -1,0 +1,35 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit security checks..."
+
+# 1. Run security scan with Trivy (if available)
+echo "📊 Checking for vulnerabilities..."
+if command -v trivy >/dev/null 2>&1; then
+    echo "🔍 Running Trivy security scan..."
+    if ! trivy fs . --format table --severity HIGH,CRITICAL --quiet; then
+        echo "❌ High or critical vulnerabilities detected!"
+        echo "💡 Run 'npm run security:scan' for detailed report"
+        exit 1
+    fi
+else
+    echo "⚠️  Trivy not installed, skipping vulnerability scan"
+    echo "💡 Install with: brew install trivy"
+fi
+
+# 2. Run secrets scan with GitLeaks (if available)  
+echo "🔐 Checking for secrets..."
+if command -v gitleaks >/dev/null 2>&1; then
+    echo "🔍 Running GitLeaks secrets scan..."
+    if ! gitleaks detect --source . --config .gitleaks.toml --no-banner; then
+        echo "❌ Potential secrets detected!"
+        echo "💡 Run 'npm run secrets:check' for detailed report"
+        exit 1
+    fi
+else
+    echo "⚠️  GitLeaks not installed, please install for better security"
+    echo "💡 Install with: brew install gitleaks"
+fi
+
+
+echo "✅ Pre-commit security checks passed!"

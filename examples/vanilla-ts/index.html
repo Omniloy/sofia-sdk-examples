@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sofia SDK • Vanilla TypeScript Integration</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg" />
+</head>
+<body>
+  <script src="/node_modules/@omniloy/sofia-sdk/dist/webcomponents.umd.js"></script>
+  
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="header-logo">
+          <img src="/assets/logo.svg" alt="Omniloy" class="omniloy-logo" />
+        </div>
+        <div class="header-text">
+          <h1>Sofia SDK • Vanilla TypeScript Integration</h1>
+          <p>Live development environment with dynamic configuration, real-time debugging tools, and complete SDK integration patterns</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sofia Component -->
+    <div class="sofia-wrapper">
+      <div class="sofia-container" id="sofia-container"></div>
+    </div>
+
+    <!-- Debug Controls -->
+    <div class="debug-section">
+      <div class="section-header">
+        <h2>SDK Development Console</h2>
+      </div>
+      <div class="debug-panel">
+        <!-- Component Controls -->
+        <div class="control-group">
+          <h3>SDK Runtime Controls</h3>
+          <div class="controls">
+            <button id="toggle-open-btn" class="btn btn-primary">
+              <span id="toggle-text">Close Sofia SDK</span>
+            </button>
+            <button id="see-report-btn" class="btn btn-secondary" disabled>
+              Get Last Report
+            </button>
+            <button id="clear-reports-btn" class="btn btn-outline">
+              Clear Reports
+            </button>
+            <button id="refresh-component-btn" class="btn btn-outline">
+              Reload SDK Component
+            </button>
+          </div>
+        </div>
+
+        <!-- Status Information -->
+        <div class="control-group">
+          <h3>SDK State Monitor</h3>
+          <div class="status-grid">
+            <div class="status-item">
+              <span class="status-label">Component Mounted:</span>
+              <span class="status-value" id="component-status">No</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">SDK State:</span>
+              <span class="status-value" id="sdk-status">Closed</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Report Handler:</span>
+              <span class="status-value" id="report-handler-status">Not Available</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Event Count:</span>
+              <span class="status-value neutral" id="event-count">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Title Editor -->
+        <div class="control-group">
+          <div class="patient-data-header">
+            <h3>Title Configuration</h3>
+            <div class="patient-data-controls">
+              <button id="toggle-title-editor" class="btn btn-outline">
+                Edit Title
+              </button>
+              <button id="apply-title" class="btn btn-primary" style="display: none;">
+                Apply Changes
+              </button>
+            </div>
+          </div>
+          
+          <div class="patient-data-section" id="title-preview">
+            <div class="patient-data-preview">
+              <h4>Current Title:</h4>
+              <div class="title-display" id="title-display">Sofia Assistant</div>
+            </div>
+          </div>
+
+          <div class="patient-data-editor" id="title-editor" style="display: none;">
+            <div class="editor-section">
+              <h4>Edit Title:</h4>
+              <input 
+                type="text" 
+                id="title-input"
+                class="title-input"
+                placeholder="Enter SDK title..."
+                maxlength="100" />
+              <div id="title-error" class="error-message" style="display: none;"></div>
+              
+              <div class="editor-footer">
+                <small class="editor-hint">
+                  💡 Title configuration: Set the display title for the Sofia SDK (max 100 chars)
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ToolArgs Editor -->
+        <div class="control-group">
+          <div class="tools-args-header">
+            <h3>Tools Arguments Configuration</h3>
+            <div class="tools-args-controls">
+              <button id="toggle-toolargs-editor" class="btn btn-outline">
+                Edit ToolArgs
+              </button>
+              <button id="apply-toolargs" class="btn btn-primary" style="display: none;">
+                Apply Changes
+              </button>
+            </div>
+          </div>
+          
+          <div class="tools-args-section" id="toolargs-preview">
+            <div class="tools-args-preview">
+              <h4>Current ToolArgs:</h4>
+              <pre class="json-display" id="toolargs-display"></pre>
+            </div>
+            <div class="tools-args-info">
+              <h4>Configuration Info:</h4>
+              <div class="config-item"><strong>Tools:</strong> <span id="tools-count">0</span></div>
+              <div class="config-item"><strong>Last Modified:</strong> <span id="toolargs-last-modified">Never</span></div>
+            </div>
+          </div>
+
+          <div class="tools-args-editor" id="toolargs-editor" style="display: none;">
+            <div class="editor-header">
+              <h4>Edit ToolArgs JSON:</h4>
+            </div>
+            <textarea 
+              id="toolargs-json-editor" 
+              class="json-editor"
+              placeholder="Enter valid JSON for tools arguments..."></textarea>
+            <div id="toolargs-error" class="error-message" style="display: none;"></div>
+            
+            <div class="editor-footer">
+              <small class="editor-hint">
+                💡 ToolArgs configuration: Define tools and their arguments for the Sofia SDK (valid JSON required)
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Patient Data Editor -->
+        <div class="control-group">
+          <div class="patient-data-header">
+            <h3>Patient Data Configuration</h3>
+            <div class="patient-data-controls">
+              <button id="toggle-patientdata-editor" class="btn btn-outline">
+                Edit Patient Data
+              </button>
+              <button id="apply-patientdata" class="btn btn-primary" style="display: none;">
+                Apply Changes
+              </button>
+            </div>
+          </div>
+          
+          <div class="patient-data-section" id="patientdata-preview">
+            <div class="patient-data-preview">
+              <h4>Current Patient Data:</h4>
+              <pre class="json-display" id="patientdata-display"></pre>
+            </div>
+          </div>
+
+          <div class="patient-data-editor" id="patientdata-editor" style="display: none;">
+            <div class="editor-section">
+              <h4>Edit Patient Data JSON:</h4>
+              <textarea 
+                id="patientdata-json-editor" 
+                class="json-editor"
+                placeholder="Enter valid JSON for patient data..."></textarea>
+              <div id="patientdata-error" class="error-message" style="display: none;"></div>
+              
+              <div class="editor-footer">
+                <small class="editor-hint">
+                  💡 Patient Data configuration: Define patient information for the Sofia SDK (valid JSON required)
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Sources Editor -->
+        <div class="control-group">
+          <div class="patient-data-header">
+            <h3>Chat Sources Configuration</h3>
+            <div class="patient-data-controls">
+              <button id="toggle-chatsources-editor" class="btn btn-outline">
+                Edit Chat Sources
+              </button>
+              <button id="apply-chatsources" class="btn btn-primary" style="display: none;">
+                Apply Changes
+              </button>
+            </div>
+          </div>
+          
+          <div class="patient-data-section" id="chatsources-preview">
+            <div class="patient-data-preview">
+              <h4>Current Chat Sources:</h4>
+              <div class="chat-sources-display" id="chatsources-display"></div>
+            </div>
+          </div>
+
+          <div class="patient-data-editor" id="chatsources-editor" style="display: none;">
+            <div class="editor-section">
+              <h4>Edit Chat Sources:</h4>
+              <input 
+                type="text" 
+                id="chatsources-input"
+                class="chat-sources-input"
+                placeholder="Enter chat sources configuration..."
+                maxlength="500" />
+              <div id="chatsources-error" class="error-message" style="display: none;"></div>
+              
+              <div class="editor-footer">
+                <small class="editor-hint">
+                  💡 Chat sources configuration: Set the sources for chat functionality (max 500 chars)
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Only Chat Control -->
+        <div class="control-group">
+          <div class="config-header">
+            <h3>Only Chat Mode</h3>
+          </div>
+          <div class="config-section">
+            <div class="toggle-control">
+              <label class="toggle-label">
+                <input 
+                  type="checkbox" 
+                  id="only-chat-toggle"
+                  class="toggle-checkbox" />
+                <span class="toggle-text" id="only-chat-text">Only Chat Mode: OFF</span>
+              </label>
+              <div class="toggle-description" id="only-chat-description">
+                Full interface with all features
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Data -->
+        <div class="control-group" id="report-data-section" style="display: none;">
+          <h3>Report Data</h3>
+          
+          <div id="last-report-section" style="display: none;" class="data-section">
+            <h4>Last Received Report:</h4>
+            <pre class="json-display" id="last-report-content"></pre>
+          </div>
+          
+          <div id="retrieved-report-section" style="display: none;" class="data-section">
+            <h4>Retrieved Report:</h4>
+            <pre class="json-display" id="retrieved-report-content"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

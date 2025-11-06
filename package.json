@@ -1,0 +1,41 @@
+{
+  "name": "sofia-sdk-examples",
+  "version": "0.0.2",
+  "description": "Sofia SDK Integration Examples - Complete implementation showcases for Vanilla TypeScript, Angular, and AngularJS development tools, dynamic configuration, and real-time debugging capabilities",
+  "scripts": {
+    "prepare": "husky install",
+    "security:check": "command -v trivy >/dev/null 2>&1 && trivy fs . --format table --severity HIGH,CRITICAL || echo '⚠️  Trivy not installed. Install with: brew install trivy'",
+    "secrets:check": "command -v gitleaks >/dev/null 2>&1 && gitleaks detect --source . --config .gitleaks.toml --no-banner || echo '⚠️  GitLeaks not installed. Install with: brew install gitleaks'",
+    "security": "npm run security:check && npm run secrets:check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/omniloy/sofia-examples.git"
+  },
+  "keywords": [
+    "sofia",
+    "web-components",
+    "typescript",
+    "angular",
+    "angularjs",
+    "vite",
+    "examples",
+    "integration",
+    "medical-ai",
+    "healthcare",
+    "omniloy"
+  ],
+  "author": "Omniloy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/omniloy/sofia-sdk-examples/issues"
+  },
+  "homepage": "https://github.com/omniloy/sofia-sdk-examples#readme",
+  "devDependencies": {
+    "husky": "^8.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

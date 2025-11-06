@@ -1,0 +1,7 @@
+# Trivy ignore file for sofia-examples
+# This file contains vulnerabilities that are acceptable for example purposes
+
+# AngularJS 1.8.3 - CVE-2024-21490 (Inefficient Regular Expression Complexity)
+# This is a legacy example for demonstration purposes only
+# Users should be aware of this limitation when using AngularJS in production
+CVE-2024-21490

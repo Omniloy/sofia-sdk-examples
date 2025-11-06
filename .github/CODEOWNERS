@@ -1,0 +1,15 @@
+# Code owners for Sofia Examples
+# Only Omniloy team members can approve changes
+
+# Global owners - require review from at least one
+* @jordigiam @laupucci
+
+# Specific ownership for critical files
+README.md @jordigiam @laupucci
+LICENSE @jordigiam @laupucci
+.github/ @jordigiam @laupucci
+
+# Example-specific ownership
+/examples/vanilla-ts/ @jordigiam @laupucci
+/examples/angular-ts/ @jordigiam @laupucci
+/examples/angular-js/ @jordigiam @laupucci

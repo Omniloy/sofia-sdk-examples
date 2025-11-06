@@ -1,0 +1,18 @@
+{
+  "name": "sofia-angular-js",
+  "version": "0.0.2",
+  "description": "Sofia SDK • AngularJS Integration Example - Professional development environment with dynamic configuration and real-time debugging tools",
+  "author": "Omniloy",
+  "license": "MIT",
+  "scripts": {
+    "build": "node generate-env.js",
+    "start": "yarn build && http-server ./src -a 0.0.0.0 -p ${PORT:-8000} -c-1 --cors",
+    "dev": "http-server ./src -a localhost -p 8000 -c-1 -o"
+  },
+  "dependencies": {
+    "angular": "^1.8.3",
+    "angular-route": "^1.8.3",
+    "http-server": "^14.1.1",
+    "dotenv": "^16.3.1"
+  }
+}
