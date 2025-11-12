@@ -1,11 +1,39 @@
 import type { AppConfig, PatientData } from '../types';
 
+// Configuration loader function
+export async function loadConfig(): Promise<AppConfig> {
+  try {
+    const response = await fetch('/assets/environment.json');
+    const envConfig = await response.json();
+    
+    return {
+      patientId: envConfig.sdk?.defaultPatientId || 'YOUR_DEFAULT_PATIENT_ID',
+      userId: envConfig.sdk?.defaultUserId || 'YOUR_DEFAULT_USER_ID', 
+      baseUrl: envConfig.sdk?.baseUrl || 'YOUR_BASE_URL',
+      wssUrl: envConfig.sdk?.wssUrl || 'YOUR_WSS_URL',
+      apiKey: envConfig.sdk?.apiKey || 'YOUR_API_KEY',
+      isOpen: envConfig.sdk?.isOpen ?? true
+    };
+  } catch (error) {
+    console.warn('Could not load environment.json, using placeholder defaults');
+    return {
+      patientId: 'YOUR_DEFAULT_PATIENT_ID',
+      userId: 'YOUR_DEFAULT_USER_ID',
+      baseUrl: 'YOUR_BASE_URL', 
+      wssUrl: 'YOUR_WSS_URL',
+      apiKey: 'YOUR_API_KEY',
+      isOpen: true
+    };
+  }
+}
+
+// Fallback for immediate use (will be replaced by loadConfig())
 export const DEFAULT_CONFIG: AppConfig = {
-  patientId: '12ahte3asad45',
-  userId: 'user1aasddddd23',
-  baseUrl: import.meta.env.VITE_BASE_URL,
-  wssUrl: import.meta.env.VITE_WSS_URL,
-  apiKey: import.meta.env.VITE_API_KEY,
+  patientId: 'YOUR_DEFAULT_PATIENT_ID',
+  userId: 'YOUR_DEFAULT_USER_ID',
+  baseUrl: 'YOUR_BASE_URL',
+  wssUrl: 'YOUR_WSS_URL', 
+  apiKey: 'YOUR_API_KEY',
   isOpen: true
 };
 

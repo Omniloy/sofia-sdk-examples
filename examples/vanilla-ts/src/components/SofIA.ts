@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, DEFAULT_PATIENT_DATA, TOOLS_CONFIG } from "../utils/config";
+import { DEFAULT_CONFIG, DEFAULT_PATIENT_DATA, TOOLS_CONFIG, loadConfig } from "../utils/config";
 
 interface OmniscribeElement extends HTMLElement {
   handleReport?: (report: any) => void;
@@ -70,10 +70,28 @@ export class SofIA {
     try {
       const response = await fetch('/assets/environment.json');
       if (response.ok) {
-        const loadedConfig = await response.json();
-        this.config = { ...this.config, ...loadedConfig };
+        const envData = await response.json();
+        
+        // Update config from environment.json structure
+        if (envData.sdk) {
+          this.config = {
+            ...this.config,
+            baseUrl: envData.sdk.baseUrl || this.config.baseUrl,
+            wssUrl: envData.sdk.wssUrl || this.config.wssUrl, 
+            apiKey: envData.sdk.apiKey || this.config.apiKey,
+            patientId: envData.sdk.defaultPatientId || this.config.patientId,
+            userId: envData.sdk.defaultUserId || this.config.userId,
+            isOpen: envData.sdk.isOpen ?? this.config.isOpen
+          };
+          
+          // Update other properties
+          this.sofiaTitle = envData.sdk.title || this.sofiaTitle;
+          this.onlyChat = envData.sdk.onlyChat ?? this.onlyChat;
+          this.chatSources = envData.sdk.chatsources || this.chatSources;
+        }
       }
     } catch (e) {
+      console.warn('Could not load environment.json, using defaults');
       // Using default configuration
     }
   }

@@ -68,7 +68,7 @@ This example uses the Sofia SDK from npm:
 ```json
 {
   "dependencies": {
-    "@omniloy/sofia-sdk": "0.0.2"
+    "@omniloy/sofia-sdk": "0.0.4"
   }
 }
 ```

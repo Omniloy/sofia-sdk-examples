@@ -16,6 +16,6 @@
     "vite": "^7.1.2"
   },
   "dependencies": {
-    "@omniloy/sofia-sdk": "0.0.3"
+    "@omniloy/sofia-sdk": "0.0.4"
   }
 }

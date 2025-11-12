@@ -19,6 +19,29 @@ This project demonstrates how to integrate the **Sofia SDK** (a React-based web 
 - npm ≥ 8.x or pnpm  
 - Modern browser with Custom Elements support
 
+### Configuration
+
+**Edit `public/assets/environment.json` with your Sofia SDK credentials:**
+
+```json
+{
+  "production": false,
+  "sdk": {
+    "baseUrl": "YOUR_BASE_URL",
+    "wssUrl": "YOUR_WSS_URL",
+    "apiKey": "YOUR_API_KEY", 
+    "defaultUserId": "YOUR_DEFAULT_USER_ID",
+    "defaultPatientId": "YOUR_DEFAULT_PATIENT_ID",
+    "title": "Sofia Assistant",
+    "language": "es",
+    "isOpen": true,
+    "onlyChat": false
+  }
+}
+```
+
+> **⚠️ Important**: Replace placeholder values with actual credentials provided by Omniloy.
+
 ### Installation & Run
 ```bash
 npm install
@@ -35,7 +58,7 @@ Then open: http://localhost:5173
 1. **Install Sofia SDK dependency**:
 
 ```bash
-npm install @omniloy/sofia-sdk@0.0.3
+npm install @omniloy/sofia-sdk@0.0.4
 ```
 
 2. **Import Sofia SDK** (in main.ts):
@@ -103,7 +126,7 @@ This example includes a comprehensive development environment:
 
 ## 🔍 Troubleshooting
 
-- **Component not loading** → Ensure Sofia SDK is installed: `npm install @omniloy/sofia-sdk@0.0.3`
+- **Component not loading** → Ensure Sofia SDK is installed: `npm install @omniloy/sofia-sdk@0.0.4`
 - **Callbacks not firing** → Check you're assigning handleReport and setIsOpen after creating the component
 - **Boolean attributes** → Must be strings ("true" / "false") when using setAttribute
 - **Configuration issues** → Verify environment.json has correct placeholder format
@@ -112,7 +135,7 @@ This example includes a comprehensive development environment:
 
 - **Vite** 7
 - **TypeScript** 5.8
-- **Sofia SDK**: @omniloy/sofia-sdk@0.0.3
+- **Sofia SDK**: @omniloy/sofia-sdk@0.0.4
 - **No framework dependencies** (pure vanilla TypeScript)
 
 ## 🌐 Browser compatibility
