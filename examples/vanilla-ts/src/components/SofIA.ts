@@ -23,15 +23,6 @@ export class SofIA {
   private config = { ...DEFAULT_CONFIG };
   private patientData = { ...DEFAULT_PATIENT_DATA };
   private toolsArgs = { ...TOOLS_CONFIG };
-  private chatSources = [
-    'Guías Clínicas',
-    'Base de Datos de Medicamentos', 
-    'Estudios Científicos',
-    'Base de Datos EMA',
-    'Guías OMS',
-    'Guías NICE',
-    'Base de Datos FDA'
-  ];
 
   // Editor states
   private isEditingTitle = false;
@@ -46,10 +37,6 @@ export class SofIA {
   private patientDataString = '';
   private patientDataError = '';
   
-  private isEditingChatSources = false;
-  private chatSourcesString = '';
-  private chatSourcesError = '';
-
   async init() {
     await this.loadConfig();
     this.setupEventListeners();
@@ -87,7 +74,6 @@ export class SofIA {
           // Update other properties
           this.sofiaTitle = envData.sdk.title || this.sofiaTitle;
           this.onlyChat = envData.sdk.onlyChat ?? this.onlyChat;
-          this.chatSources = envData.sdk.chatsources || this.chatSources;
         }
       }
     } catch (e) {
@@ -169,22 +155,6 @@ export class SofIA {
       this.validatePatientData();
     });
 
-    // Chat Sources editor
-    const chatSourcesToggleBtn = document.getElementById('toggle-chatsources-editor');
-    chatSourcesToggleBtn?.addEventListener('click', () => {
-      this.toggleChatSourcesEditor();
-    });
-
-    const chatSourcesApplyBtn = document.getElementById('apply-chatsources');
-    chatSourcesApplyBtn?.addEventListener('click', () => {
-      this.applyChatSources();
-    });
-
-    const chatSourcesInput = document.getElementById('chatsources-input') as HTMLInputElement;
-    chatSourcesInput?.addEventListener('input', () => {
-      this.validateChatSources();
-    });
-
     // Only chat toggle
     const onlyChatToggle = document.getElementById('only-chat-toggle') as HTMLInputElement;
     onlyChatToggle?.addEventListener('change', () => {
@@ -213,7 +183,6 @@ export class SofIA {
     component.setAttribute('patientdata', JSON.stringify(this.patientData));
     component.setAttribute('toolsargs', JSON.stringify(this.toolsArgs));
     component.setAttribute('onlychat', this.onlyChat.toString());
-    component.setAttribute('chatsources', JSON.stringify(this.chatSources));
 
     // Set up event handlers
     component.handleReport = (report: unknown) => {
@@ -322,12 +291,6 @@ export class SofIA {
     const patientDataDisplay = document.getElementById('patientdata-display');
     if (patientDataDisplay) {
       patientDataDisplay.textContent = JSON.stringify(this.patientData, null, 2);
-    }
-
-    // Update Chat Sources display
-    const chatSourcesDisplay = document.getElementById('chatsources-display');
-    if (chatSourcesDisplay) {
-      chatSourcesDisplay.textContent = this.chatSources.join(', ') || 'Not set';
     }
   }
 
@@ -698,93 +661,6 @@ export class SofIA {
       this.component.setAttribute('patientdata', JSON.stringify(this.patientData));
     } else {
       console.warn('Componente Sofia no encontrado, no se pudo actualizar patientdata');
-    }
-  }
-
-  // Chat Sources Editor Methods
-  private toggleChatSourcesEditor() {
-    this.isEditingChatSources = !this.isEditingChatSources;
-    
-    const chatSourcesPreview = document.getElementById('chatsources-preview');
-    const chatSourcesEditor = document.getElementById('chatsources-editor');
-    const toggleBtn = document.getElementById('toggle-chatsources-editor');
-    const applyBtn = document.getElementById('apply-chatsources');
-    
-    if (this.isEditingChatSources) {
-      this.chatSourcesString = this.chatSources.join(', ');
-      const chatSourcesInput = document.getElementById('chatsources-input') as HTMLInputElement;
-      if (chatSourcesInput) {
-        chatSourcesInput.value = this.chatSourcesString;
-      }
-      
-      if (chatSourcesPreview) chatSourcesPreview.style.display = 'none';
-      if (chatSourcesEditor) chatSourcesEditor.style.display = 'block';
-      if (toggleBtn) toggleBtn.textContent = 'Cancel Edit';
-      if (applyBtn) applyBtn.style.display = 'inline-flex';
-    } else {
-      if (chatSourcesPreview) chatSourcesPreview.style.display = 'block';
-      if (chatSourcesEditor) chatSourcesEditor.style.display = 'none';
-      if (toggleBtn) toggleBtn.textContent = 'Edit Chat Sources';
-      if (applyBtn) applyBtn.style.display = 'none';
-      this.chatSourcesError = '';
-      this.updateChatSourcesError();
-    }
-  }
-
-  private validateChatSources() {
-    const chatSourcesInput = document.getElementById('chatsources-input') as HTMLInputElement;
-    if (!chatSourcesInput) return;
-    
-    this.chatSourcesString = chatSourcesInput.value;
-    this.chatSourcesError = '';
-    
-    if (this.chatSourcesString.length > 500) {
-      this.chatSourcesError = 'Chat sources is too long (max 500 characters)';
-    }
-    
-    this.updateChatSourcesError();
-    this.updateChatSourcesApplyButtonState();
-  }
-
-  private updateChatSourcesError() {
-    const errorElement = document.getElementById('chatsources-error');
-    const chatSourcesInput = document.getElementById('chatsources-input') as HTMLInputElement;
-    
-    if (errorElement) {
-      if (this.chatSourcesError) {
-        errorElement.textContent = this.chatSourcesError;
-        errorElement.style.display = 'block';
-      } else {
-        errorElement.style.display = 'none';
-      }
-    }
-    
-    if (chatSourcesInput) {
-      chatSourcesInput.className = this.chatSourcesError ? 'chat-sources-input error' : 'chat-sources-input';
-    }
-  }
-
-  private updateChatSourcesApplyButtonState() {
-    const applyBtn = document.getElementById('apply-chatsources') as HTMLButtonElement;
-    if (applyBtn) {
-      applyBtn.disabled = !!this.chatSourcesError;
-    }
-  }
-
-  private applyChatSources() {
-    if (this.chatSourcesError) return;
-    
-    this.chatSources = this.chatSourcesString.split(',').map(s => s.trim()).filter(s => s.length > 0);
-    this.updateComponentChatSources();
-    this.toggleChatSourcesEditor();
-    this.updateUI();
-  }
-
-  private updateComponentChatSources() {
-    if (this.component) {
-      this.component.setAttribute('chatsources', JSON.stringify(this.chatSources));
-    } else {
-      console.warn('Componente Sofia no encontrado, no se pudo actualizar chatsources');
     }
   }
 

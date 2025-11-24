@@ -199,46 +199,6 @@
         </div>
       </div>
 
-      <!-- Chat Sources Editor -->
-      <div class="control-group">
-        <div class="patient-data-header">
-          <h3>Chat Sources Configuration</h3>
-          <div class="patient-data-controls">
-            <button type="button" ng-click="toggleChatSourcesEditor()" class="btn btn-outline">
-              <span ng-show="isEditingChatSources">Cancel</span>
-              <span ng-show="!isEditingChatSources">Edit Chat Sources</span>
-            </button>
-            <button type="button" ng-show="isEditingChatSources" ng-click="applyChatSources()" ng-disabled="chatSourcesError" class="btn btn-primary">
-              Apply Changes
-            </button>
-          </div>
-        </div>
-        
-        <div class="patient-data-section" ng-show="!isEditingChatSources">
-          <div class="patient-data-preview">
-            <h4>Current Chat Sources:</h4>
-            <div class="chat-sources-list" ng-show="chatSources.length > 0">
-              <span ng-repeat="source in chatSources" class="chat-source-tag">{{source}}</span>
-            </div>
-            <div ng-show="chatSources.length === 0" class="empty-state">No chat sources configured</div>
-          </div>
-        </div>
-
-        <div class="patient-data-editor" ng-show="isEditingChatSources">
-          <div class="form-group">
-            <label for="chat-sources-editor">Chat Sources (comma-separated):</label>
-            <textarea id="chat-sources-editor"
-                      ng-model="chatSourcesString"
-                      ng-change="validateChatSources()"
-                      placeholder="Enter comma-separated chat sources (e.g., web, documents, knowledge-base)"
-                      rows="3"
-                      class="form-textarea"
-                      ng-class="{'error': chatSourcesError}"></textarea>
-            <div ng-show="chatSourcesError" class="error-message">{{chatSourcesError}}</div>
-          </div>
-        </div>
-      </div>
-
       <!-- Report Display -->
       <div class="control-group" ng-show="lastReport || retrievedReport">
         <h3>SDK Event Monitor</h3>

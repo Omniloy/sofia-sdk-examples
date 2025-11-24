@@ -112,7 +112,7 @@ This example includes a comprehensive development environment:
 
 - **Runtime Controls**: Open/Close Sofia, get reports, refresh component
 - **State Monitor**: Real-time component status and event tracking  
-- **Dynamic Editors**: Live editing of title, toolArgs, patient data, chat sources
+- **Dynamic Editors**: Live editing of title, toolArgs, patient data
 - **Only Chat Mode**: Toggle between full interface and chat-only mode
 - **Professional UI**: Clean, modern interface matching production standards
 

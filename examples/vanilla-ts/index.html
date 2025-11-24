@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="/assets/logo.svg" />
 </head>
 <body>
-  <script src="/node_modules/@omniloy/sofia-sdk/dist/webcomponents.umd.js"></script>
+    <script src="/node_modules/@omniloy/sofia-sdk/dist/webcomponents.umd.js"></script>
   
   <div class="container">
     <!-- Header -->
@@ -194,47 +194,6 @@
               <div class="editor-footer">
                 <small class="editor-hint">
                   💡 Patient Data configuration: Define patient information for the Sofia SDK (valid JSON required)
-                </small>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Chat Sources Editor -->
-        <div class="control-group">
-          <div class="patient-data-header">
-            <h3>Chat Sources Configuration</h3>
-            <div class="patient-data-controls">
-              <button id="toggle-chatsources-editor" class="btn btn-outline">
-                Edit Chat Sources
-              </button>
-              <button id="apply-chatsources" class="btn btn-primary" style="display: none;">
-                Apply Changes
-              </button>
-            </div>
-          </div>
-          
-          <div class="patient-data-section" id="chatsources-preview">
-            <div class="patient-data-preview">
-              <h4>Current Chat Sources:</h4>
-              <div class="chat-sources-display" id="chatsources-display"></div>
-            </div>
-          </div>
-
-          <div class="patient-data-editor" id="chatsources-editor" style="display: none;">
-            <div class="editor-section">
-              <h4>Edit Chat Sources:</h4>
-              <input 
-                type="text" 
-                id="chatsources-input"
-                class="chat-sources-input"
-                placeholder="Enter chat sources configuration..."
-                maxlength="500" />
-              <div id="chatsources-error" class="error-message" style="display: none;"></div>
-              
-              <div class="editor-footer">
-                <small class="editor-hint">
-                  💡 Chat sources configuration: Set the sources for chat functionality (max 500 chars)
                 </small>
               </div>
             </div>

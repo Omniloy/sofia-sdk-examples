@@ -10,14 +10,6 @@
     "language": "es",
     "isOpen": true,
     "onlyChat": false,
-    "chatsources": [
-      "Guías Clínicas",
-      "Base de Datos de Medicamentos", 
-      "Estudios Científicos",
-      "Base de Datos EMA",
-      "Guías OMS",
-      "Guías SEOM"
-    ],
     "features": {
       "debugMode": true,
       "enableJsonPreview": true,
