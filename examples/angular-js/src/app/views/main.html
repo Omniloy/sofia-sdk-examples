@@ -15,7 +15,15 @@
   <!-- Sofia Component -->
   <div class="sofia-wrapper">
     <div class="sofia-container">
-      <sofia-sdk id="sofia-component"></sofia-sdk>
+      <sofia-sdk id="sofia-component" 
+        ng-if="baseUrl && wssUrl && patientId"
+        patientid="{{patientId}}"
+        userid="{{userId}}"
+        apikey="{{apiKey}}"
+        baseurl="{{baseUrl}}"
+        wssurl="{{wssUrl}}"
+        isopen="{{isOpen}}"
+      ></sofia-sdk>
     </div>
   </div>
 
