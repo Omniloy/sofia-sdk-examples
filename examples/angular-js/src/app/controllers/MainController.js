@@ -3,15 +3,7 @@ angular.module('myApp').controller('MainController', [
   '$http', 
   '$timeout', 
   function($scope, $http, $timeout) {
-    const DEFAULT_CONFIG = {
-      patientId: '12345',
-      userId: 'user123',
-      baseUrl: 'https://api.example.com',
-      wssUrl: 'https://api.example.com',
-      apiKey: 'demo-key',
-      isOpen: true
-    };
-
+ 
     const DEFAULT_PATIENT_DATA = {
       extraData: { enfermedad: 'es celiaco y diabético' },
       fullName: 'John Doe',
@@ -26,12 +18,6 @@ angular.module('myApp').controller('MainController', [
     $scope.reports = [];
 
     // Configuration with defaults
-    $scope.patientId = '12345';
-    $scope.userId = 'user123';
-    $scope.baseUrl = 'https://api.example.com';
-    $scope.wssUrl = 'https://api.example.com';
-    $scope.apiKey = 'demo-key';
-    $scope.isOpen = true;
     $scope.sofiaTitle = 'Sofia Assistant';
     $scope.onlyChat = false;
     $scope.toolsArgsObject = window.ToolArgs || {};
@@ -321,14 +307,12 @@ angular.module('myApp').controller('MainController', [
      * @param {Object} config - Configuration object
      */
     $scope.initializeEnvironment = function(config) {
-      const mergedConfig = { ...DEFAULT_CONFIG, ...config };
-      
-      $scope.patientId = mergedConfig.patientId;
-      $scope.userId = mergedConfig.userId;
-      $scope.baseUrl = mergedConfig.baseUrl;
-      $scope.wssUrl = mergedConfig.wssUrl;
-      $scope.apiKey = mergedConfig.apiKey;
-      $scope.isOpen = mergedConfig.isOpen;
+      $scope.patientId = config.patientId;
+      $scope.userId = config.userId;
+      $scope.baseUrl = config.baseUrl;
+      $scope.wssUrl = config.wssUrl;
+      $scope.apiKey = config.apiKey;
+      $scope.isOpen = config.isOpen;
       
       if (config.patientData) {
         $scope.patientData = { ...DEFAULT_PATIENT_DATA, ...config.patientData };
