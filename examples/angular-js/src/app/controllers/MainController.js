@@ -20,16 +20,6 @@ angular.module('myApp').controller('MainController', [
       address: '123 Main St, Example City'
     };
 
-    const DEFAULT_CHAT_SOURCES = [
-      'Guías Clínicas',
-      'Base de Datos de Medicamentos',
-      'Estudios Científicos',
-      'Base de Datos EMA',
-      'Guías OMS',
-      'Guías NICE',
-      'Base de Datos FDA'
-    ];
-
     // Initialize scope variables
     $scope.componentInitialized = false;
     $scope.getLastReportFn = null;
@@ -46,29 +36,24 @@ angular.module('myApp').controller('MainController', [
     $scope.onlyChat = false;
     $scope.toolsArgsObject = window.ToolArgs || {};
     $scope.patientData = DEFAULT_PATIENT_DATA;
-    $scope.chatSources = DEFAULT_CHAT_SOURCES;
 
     // Editor states
     $scope.isEditingTitle = false;
     $scope.isEditingToolArgs = false;
     $scope.isEditingPatientData = false;
-    $scope.isEditingChatSources = false;
 
     // Editor values
     $scope.titleInput = $scope.sofiaTitle;
     $scope.toolArgsString = JSON.stringify($scope.toolsArgsObject, null, 2);
     $scope.patientDataString = JSON.stringify($scope.patientData, null, 2);
-    $scope.chatSourcesString = $scope.chatSources.join(', ');
 
     // Error states
     $scope.toolArgsError = '';
     $scope.patientDataError = '';
-    $scope.chatSourcesError = '';
 
     // Computed properties for component binding
     $scope.toolsArgs = JSON.stringify($scope.toolsArgsObject);
     $scope.patientDataJson = JSON.stringify($scope.patientData);
-    $scope.chatSourcesJson = JSON.stringify($scope.chatSources);
 
     /**
      * Handle reports from the component
@@ -328,62 +313,6 @@ angular.module('myApp').controller('MainController', [
     };
 
     // =============================================================================
-    // CHAT SOURCES EDITOR METHODS
-    // =============================================================================
-
-    /**
-     * Toggle Chat Sources editor
-     */
-    $scope.toggleChatSourcesEditor = function() {
-      if ($scope.isEditingChatSources) {
-        $scope.chatSourcesString = $scope.chatSources.join(', '); // Reset on cancel
-        $scope.chatSourcesError = '';
-      } else {
-        $scope.chatSourcesString = $scope.chatSources.join(', '); // Initialize
-      }
-      $scope.isEditingChatSources = !$scope.isEditingChatSources;
-    };
-
-    /**
-     * Validate Chat Sources
-     */
-    $scope.validateChatSources = function() {
-      if (!$scope.chatSourcesString.trim()) {
-        $scope.chatSourcesError = 'Chat sources cannot be empty';
-        return;
-      }
-      
-      const sources = $scope.chatSourcesString.split(',').map(s => s.trim()).filter(s => s.length > 0);
-      if (sources.length === 0) {
-        $scope.chatSourcesError = 'At least one valid chat source is required';
-      } else {
-        $scope.chatSourcesError = '';
-      }
-    };
-
-    /**
-     * Apply Chat Sources changes
-     */
-    $scope.applyChatSources = function() {
-      if ($scope.chatSourcesError) return;
-      
-      $scope.chatSources = $scope.chatSourcesString.split(',').map(s => s.trim()).filter(s => s.length > 0);
-      $scope.chatSourcesJson = JSON.stringify($scope.chatSources); // For component binding
-      $scope.updateComponentChatSources();
-      $scope.isEditingChatSources = false;
-    };
-
-    /**
-     * Update component chatSources attribute
-     */
-    $scope.updateComponentChatSources = function() {
-      const component = document.getElementById('sofia-component');
-      if (component) {
-        component.setAttribute('chatsources', $scope.chatSourcesJson);
-      }
-    };
-
-    // =============================================================================
     // COMPONENT INITIALIZATION
     // =============================================================================
 
@@ -471,15 +400,7 @@ angular.module('myApp').controller('MainController', [
       } catch (e) {
         console.warn('Error setting patientdata:', e);
       }
-      
-      try {
-        if ($scope.chatSources && $scope.chatSources.length > 0) {
-          component.setAttribute('chatsources', JSON.stringify($scope.chatSources));
-        }
-      } catch (e) {
-        console.warn('Error setting chatsources:', e);
-      }
-      
+            
       // Set direct function properties
       component.handleReport = $scope.handleReport;
       component.setIsOpen = function(isOpenOrToggleFunction) {

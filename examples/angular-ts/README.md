@@ -32,14 +32,6 @@ export const environment = {
     apiKey: 'YOUR_API_KEY',
     defaultUserId: 'YOUR_DEFAULT_USER_ID',
     defaultPatientId: 'YOUR_DEFAULT_PATIENT_ID',
-    chatsources: [
-      'Guías Clínicas',
-      'Base de Datos de Medicamentos',
-      'Estudios Científicos',
-      'Base de Datos EMA',
-      'Guías OMS',
-      'Guías SEOM'
-    ],
     features: {
       debugMode: true,
       enableJsonPreview: true

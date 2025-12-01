@@ -59,7 +59,6 @@ declare global {
           [attr.transcriptorselectvalues]="transcriptorSelectValuesString"
           [attr.patientdata]="patientDataString"
           [attr.isopen]="isOpen ? 'true' : 'false'"
-          [attr.chatsources]="chatSourcesString"
         >
         </sofia-sdk>
       </div>
@@ -139,9 +138,6 @@ declare global {
               </div>
               <div class="config-item">
                 <strong>Language:</strong> Spanish (es)
-              </div>
-              <div class="config-item">
-                <strong>Chat Sources:</strong> {{ chatSources || 'Not set' }}
               </div>
             </div>
           </div>
@@ -310,54 +306,6 @@ declare global {
             </div>
           </div>
 
-          <!-- Chat Sources -->
-          <div class="control-group">
-            <div class="patient-data-header">
-              <h3>Chat Sources Configuration</h3>
-              <div class="patient-data-controls">
-                <button 
-                  (click)="toggleChatSourcesEditor()" 
-                  class="btn btn-outline">
-                  {{ isEditingChatSources ? 'Cancel Edit' : 'Edit Chat Sources' }}
-                </button>
-                <button 
-                  *ngIf="isEditingChatSources" 
-                  (click)="applyChatSources()" 
-                  class="btn btn-primary"
-                  [disabled]="chatSourcesError">
-                  Apply Changes
-                </button>
-              </div>
-            </div>
-            
-            <div class="patient-data-section" *ngIf="!isEditingChatSources">
-              <div class="patient-data-preview">
-                <h4>Current Chat Sources:</h4>
-                <div class="chat-sources-display">{{ chatSources || 'Not set' }}</div>
-              </div>
-            </div>
-
-            <div class="patient-data-editor" *ngIf="isEditingChatSources">
-              <div class="editor-section">
-                <h4>Edit Chat Sources:</h4>
-                <input 
-                  type="text" 
-                  [(ngModel)]="chatSourcesString" 
-                  (input)="validateChatSources()"
-                  class="chat-sources-input"
-                  placeholder="Enter chat sources configuration..."
-                  maxlength="500" />
-                <div *ngIf="chatSourcesError" class="error-message">{{ chatSourcesError }}</div>
-                
-                <div class="editor-footer">
-                  <small class="editor-hint">
-                    💡 Chat sources configuration: Set the sources for chat functionality (max 500 chars)
-                  </small>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- Only Chat Control -->
           <div class="control-group">
             <div class="config-header">
@@ -457,13 +405,7 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
   isEditingPatientData: boolean = false;
   patientDataJsonString: string = '';
   patientDataError: string = '';
-  
-  // ChatSources editing
-  chatSources: string = '';
-  isEditingChatSources: boolean = false;
-  chatSourcesString: string = '';
-  chatSourcesError: string = '';
-  
+   
   // OnlyChat control
   onlyChat: boolean = false;
   
@@ -476,15 +418,6 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
     this.toolArgsJsonString = JSON.stringify(this.toolsArgs, null, 2);
     this.patientDataJsonString = JSON.stringify(this.patientData, null, 2);
     this.titleString = this.sofiaTitle;
-    
-    // Handle chatsources as JSON array
-    const chatSourcesValue = this.environment.omniscribe.chatsources;
-    if (Array.isArray(chatSourcesValue)) {
-      this.chatSources = JSON.stringify(chatSourcesValue);
-    } else {
-      this.chatSources = chatSourcesValue || '[]';
-    }
-    this.chatSourcesString = this.chatSources;
   }
 
   ngOnInit() {
@@ -928,67 +861,6 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
       component.setAttribute('title', this.sofiaTitle);
     } else {
       console.warn('Sofia component not found, could not update title');
-    }
-  }
-
-  /**
-   * Toggles the chat sources editor
-   */
-  toggleChatSourcesEditor() {
-    this.isEditingChatSources = !this.isEditingChatSources;
-    if (this.isEditingChatSources) {
-      // Reset to current chat sources when starting to edit
-      this.chatSourcesString = this.chatSources;
-      this.chatSourcesError = '';
-    }
-  }
-
-  /**
-   * Validates the chat sources input
-   */
-  validateChatSources() {
-    if (this.chatSourcesString.trim().length > 500) {
-      this.chatSourcesError = 'Chat sources cannot exceed 500 characters';
-    } else {
-      this.chatSourcesError = '';
-    }
-  }
-
-  /**
-   * Applies the edited chat sources to the component
-   */
-  applyChatSources() {
-    this.validateChatSources();
-    if (this.chatSourcesError) {
-      return;
-    }
-
-    try {
-      // Update the chat sources property
-      this.chatSources = this.chatSourcesString.trim();
-      
-      // Update the component attribute
-      this.updateComponentChatSources();
-      
-      // Exit editing mode
-      this.isEditingChatSources = false;
-      this.chatSourcesError = '';
-      
-    } catch (error) {
-      this.chatSourcesError = error instanceof Error ? error.message : 'Failed to apply chat sources';
-      console.error('Error applying chat sources:', error);
-    }
-  }
-
-  /**
-   * Updates the chatsources attribute on the Sofia component
-   */
-  private updateComponentChatSources() {
-    const component = document.getElementById('sofia');
-    if (component) {
-      component.setAttribute('chatsources', this.chatSources);
-    } else {
-      console.warn('Sofia component not found, could not update chatsources');
     }
   }
 
