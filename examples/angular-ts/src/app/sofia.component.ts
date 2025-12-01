@@ -54,7 +54,7 @@ declare global {
           [attr.apikey]="environment.omniscribe.apiKey"
           [attr.userid]="environment.omniscribe.defaultUserId"
           [attr.patientid]="environment.omniscribe.defaultPatientId"
-          [attr.title]="sofiaTitle"
+          [attr.sofiatitle]="sofiaTitle"
           [attr.toolsargs]="toolsArgsString"
           [attr.transcriptorselectvalues]="transcriptorSelectValuesString"
           [attr.patientdata]="patientDataString"
@@ -858,7 +858,7 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
   private updateComponentTitle() {
     const component = document.getElementById('sofia');
     if (component) {
-      component.setAttribute('title', this.sofiaTitle);
+      component.setAttribute('sofiatitle', this.sofiaTitle);
     } else {
       console.warn('Sofia component not found, could not update title');
     }

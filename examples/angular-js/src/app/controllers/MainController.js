@@ -170,7 +170,7 @@ angular.module('myApp').controller('MainController', [
     $scope.updateComponentTitle = function() {
       const component = document.getElementById('sofia-component');
       if (component) {
-        component.setAttribute('title', $scope.sofiaTitle);
+        component.setAttribute('sofiatitle', $scope.sofiaTitle);
       }
     };
 
@@ -364,7 +364,7 @@ angular.module('myApp').controller('MainController', [
       component.setAttribute('baseurl', $scope.baseUrl);
       component.setAttribute('wssurl', $scope.wssUrl);
       component.setAttribute('isopen', $scope.isOpen ? 'true' : 'false');
-      component.setAttribute('title', $scope.sofiaTitle);
+      component.setAttribute('sofiatitle', $scope.sofiaTitle);
       component.setAttribute('onlychat', $scope.onlyChat.toString());
       component.setAttribute('language', 'es');
       

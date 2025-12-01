@@ -179,7 +179,7 @@ export class SofIA {
     component.setAttribute('wssurl', this.config.wssUrl);
     component.setAttribute('isopen', this.isOpen.toString());
     component.setAttribute('language', 'es');
-    component.setAttribute('title', this.sofiaTitle);
+    component.setAttribute('sofiatitle', this.sofiaTitle);
     component.setAttribute('patientdata', JSON.stringify(this.patientData));
     component.setAttribute('toolsargs', JSON.stringify(this.toolsArgs));
     component.setAttribute('onlychat', this.onlyChat.toString());
@@ -414,7 +414,7 @@ export class SofIA {
 
   private updateComponentTitle() {
     if (this.component) {
-      this.component.setAttribute('title', this.sofiaTitle);
+      this.component.setAttribute('sofiatitle', this.sofiaTitle);
     } else {
       console.warn('Componente Sofia no encontrado, no se pudo actualizar el título');
     }
