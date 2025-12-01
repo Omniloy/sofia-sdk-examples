@@ -66,7 +66,7 @@ This example uses the Sofia SDK from npm:
 ```json
 {
   "dependencies": {
-    "@omniloy/sofia-sdk": "0.0.4"
+    "@omniloy/sofia-sdk": "0.0.6"
   }
 }
 ```
@@ -180,7 +180,7 @@ angular.module('myApp').controller('MainController', function($scope) {
 ## 📦 Tech Stack
 
 - **AngularJS** 1.8.3
-- **Sofia SDK**: @omniloy/sofia-sdk@0.0.4
+- **Sofia SDK**: @omniloy/sofia-sdk@0.0.6
 - **http-server** for development
 - **Node.js** for build pipeline
 
@@ -197,7 +197,7 @@ angular.module('myApp').controller('MainController', function($scope) {
 
 1. **Install Sofia SDK**:
    ```bash
-   npm install @omniloy/sofia-sdk@0.0.4
+   npm install @omniloy/sofia-sdk@0.0.6
    ```
 
 2. **Load SDK script** (before AngularJS):
