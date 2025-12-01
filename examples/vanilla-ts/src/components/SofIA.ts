@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, DEFAULT_PATIENT_DATA, TOOLS_CONFIG, loadConfig } from "../utils/config";
+import { DEFAULT_CONFIG, DEFAULT_PATIENT_DATA, TOOLS_CONFIG } from "../utils/config";
 
 interface OmniscribeElement extends HTMLElement {
   handleReport?: (report: any) => void;
