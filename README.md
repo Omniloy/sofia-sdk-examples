@@ -62,7 +62,7 @@ Before running any example, you need API credentials from Omniloy:
   patientId: 'your-patient-id',        // Patient context
   
   // Optional configuration
-  title: 'Sofia Assistant',            // Component title
+  sofiatitle: 'Sofia Assistant',            // Component title
   isOpen: true,                        // Show/hide component
   toolsArgs: {}                        // Tools configuration
 }
