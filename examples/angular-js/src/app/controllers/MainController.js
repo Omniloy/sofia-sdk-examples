@@ -184,7 +184,7 @@ angular.module('myApp').controller('MainController', [
     $scope.updateOnlyChat = function() {
       const component = document.getElementById('sofia-component');
       if (component) {
-        component.setAttribute('onlychat', $scope.onlyChat.toString());
+        component.setAttribute('isonlychat', $scope.onlyChat.toString());
       }
     };
 
@@ -367,7 +367,7 @@ angular.module('myApp').controller('MainController', [
       component.setAttribute('wssurl', $scope.wssUrl);
       component.setAttribute('isopen', $scope.isOpen ? 'true' : 'false');
       component.setAttribute('sofiatitle', $scope.sofiaTitle);
-      component.setAttribute('onlychat', $scope.onlyChat.toString());
+      component.setAttribute('isonlychat', $scope.onlyChat.toString());
       component.setAttribute('language', 'es');
       
       // Set JSON attributes only if they are valid

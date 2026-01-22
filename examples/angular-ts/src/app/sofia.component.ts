@@ -547,8 +547,8 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
     // Listen for any attribute changes using MutationObserver
     this.setupMutationObserver(component);
     
-    // Set the onlychat attribute programmatically to avoid Angular binding issues
-    component.setAttribute('onlychat', this.onlyChat ? 'true' : 'false');
+    // Set the isonlychat attribute programmatically to avoid Angular binding issues
+    component.setAttribute('isonlychat', this.onlyChat ? 'true' : 'false');
     
     this.componentInitialized = true;
     this.cdr.detectChanges();
@@ -866,14 +866,14 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Updates the onlychat attribute on the Sofia component
+   * Updates the isonlychat attribute on the Sofia component
    */
   updateOnlyChat() {
     const component = document.getElementById('sofia');
     if (component) {
-      component.setAttribute('onlychat', this.onlyChat ? 'true' : 'false');
+      component.setAttribute('isonlychat', this.onlyChat ? 'true' : 'false');
     } else {
-      console.warn('Sofia component not found, could not update onlychat');
+      console.warn('Sofia component not found, could not update isonlychat');
     }
   }
 

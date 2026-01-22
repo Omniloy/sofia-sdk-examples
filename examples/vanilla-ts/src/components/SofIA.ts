@@ -184,7 +184,7 @@ export class SofIA {
     component.setAttribute('sofiatitle', this.sofiaTitle);
     component.setAttribute('patientdata', JSON.stringify(this.patientData));
     component.setAttribute('toolsargs', JSON.stringify(this.toolsArgs));
-    component.setAttribute('onlychat', this.onlyChat.toString());
+    component.setAttribute('isonlychat', this.onlyChat.toString());
 
     // Set up event handlers
     component.handleReport = (report: unknown) => {
@@ -429,9 +429,9 @@ export class SofIA {
     }
     
     if (this.component) {
-      this.component.setAttribute('onlychat', this.onlyChat.toString());
+      this.component.setAttribute('isonlychat', this.onlyChat.toString());
     } else {
-      console.warn('Componente Sofia no encontrado, no se pudo actualizar onlychat');
+      console.warn('Componente Sofia no encontrado, no se pudo actualizar isonlychat');
     }
     
     this.updateUI();
