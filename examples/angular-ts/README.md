@@ -30,8 +30,8 @@ export const environment = {
     baseUrl: 'YOUR_BASE_URL',
     wssUrl: 'YOUR_WSS_URL',
     apiKey: 'YOUR_API_KEY',
-    defaultUserId: 'YOUR_DEFAULT_USER_ID',
-    defaultPatientId: 'YOUR_DEFAULT_PATIENT_ID',
+    userId: 'YOUR_DEFAULT_USER_ID',
+    patientId: 'YOUR_DEFAULT_PATIENT_ID',
     features: {
       debugMode: true,
       enableJsonPreview: true
@@ -60,7 +60,7 @@ This example uses the Sofia SDK from npm:
 ```json
 {
   "dependencies": {
-    "@omniloy/sofia-sdk": "0.0.7"
+    "@omniloy/sofia-sdk": "0.0.8"
   }
 }
 ```

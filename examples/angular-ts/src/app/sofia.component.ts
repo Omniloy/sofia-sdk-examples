@@ -48,12 +48,13 @@ declare global {
       <div class="sofia-wrapper">
         <sofia-sdk
           id="sofia"
-          [attr.baseurl]="environment.omniscribe.baseUrl"
+          [attr.baseurl]="environment.sdk.baseUrl"
           [attr.language]="'es'"
-          [attr.wssurl]="environment.omniscribe.wssUrl"
-          [attr.apikey]="environment.omniscribe.apiKey"
-          [attr.userid]="environment.omniscribe.defaultUserId"
-          [attr.patientid]="environment.omniscribe.defaultPatientId"
+          [attr.wssurl]="environment.sdk.wssUrl"
+          [attr.apikey]="environment.sdk.apiKey"
+          [attr.userid]="environment.sdk.defaultUserId"
+          [attr.patientid]="environment.sdk.defaultPatientId"
+          [attr.templateid]="environment.sdk.templateId"
           [attr.sofiatitle]="sofiaTitle"
           [attr.toolsargs]="toolsArgsString"
           [attr.transcriptorselectvalues]="transcriptorSelectValuesString"
@@ -890,7 +891,7 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
   }
 
   get maskedApiKey(): string {
-    const apiKey = this.environment.omniscribe.apiKey;
+    const apiKey = this.environment.sdk.apiKey;
     if (!apiKey || apiKey === 'YOUR_API_KEY') {
       return 'Not set';
     }

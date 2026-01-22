@@ -1,11 +1,12 @@
 export const environment = {
   production: false,
-  omniscribe: {
+  sdk: {
     baseUrl: 'YOUR_BASE_URL',
     wssUrl: 'YOUR_WSS_URL',
     apiKey: 'YOUR_API_KEY',
-    defaultUserId: 'YOUR_DEFAULT_USER_ID',
-    defaultPatientId: 'YOUR_DEFAULT_PATIENT_ID',
+    userId: 'YOUR_DEFAULT_USER_ID',
+    patientId: 'YOUR_DEFAULT_PATIENT_ID',
+    templateId: 'YOUR_TEMPLATE_ID',
     features: {
       debugMode: true,
       enableJsonPreview: true

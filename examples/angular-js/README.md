@@ -38,8 +38,8 @@ The build script will generate `src/assets/environment.json` with placeholders a
   "baseUrl": "YOUR_BASE_URL",
   "wssUrl": "YOUR_WSS_URL", 
   "apiKey": "YOUR_API_KEY",
-  "defaultUserId": "YOUR_DEFAULT_USER_ID",
-  "defaultPatientId": "YOUR_DEFAULT_PATIENT_ID"
+  "userId": "YOUR_DEFAULT_USER_ID",
+  "patientId": "YOUR_DEFAULT_PATIENT_ID"
 }
 ```
 
@@ -66,7 +66,7 @@ This example uses the Sofia SDK from npm:
 ```json
 {
   "dependencies": {
-    "@omniloy/sofia-sdk": "0.0.7"
+    "@omniloy/sofia-sdk": "0.0.8"
   }
 }
 ```
@@ -180,7 +180,7 @@ angular.module('myApp').controller('MainController', function($scope) {
 ## 📦 Tech Stack
 
 - **AngularJS** 1.8.3
-- **Sofia SDK**: @omniloy/sofia-sdk@0.0.7
+- **Sofia SDK**: @omniloy/sofia-sdk@0.0.8
 - **http-server** for development
 - **Node.js** for build pipeline
 
@@ -197,7 +197,7 @@ angular.module('myApp').controller('MainController', function($scope) {
 
 1. **Install Sofia SDK**:
    ```bash
-   npm install @omniloy/sofia-sdk@0.0.7
+   npm install @omniloy/sofia-sdk@0.0.8
    ```
 
 2. **Load SDK script** (before AngularJS):

@@ -61,10 +61,13 @@ Before running any example, you need API credentials from Omniloy:
   userId: 'your-user-id',              // User identifier
   patientId: 'your-patient-id',        // Patient context
   
+  toolsArgs: {}                        // Template configuration
+  templateId: 'your-template-id',
+  
   // Optional configuration
   sofiatitle: 'Sofia Assistant',            // Component title
   isOpen: true,                        // Show/hide component
-  toolsArgs: {}                        // Tools configuration
+  
 }
 ```
 
