@@ -60,7 +60,7 @@ This example uses the Sofia SDK from npm:
 ```json
 {
   "dependencies": {
-    "@omniloy/sofia-sdk": "0.0.8"
+    "@omniloy/sofia-sdk": "0.0.9"
   }
 }
 ```
@@ -151,7 +151,7 @@ export class OmniscribeDemoComponent {
   [attr.patientdata]="patientDataString"
   [attr.isopen]="isOpen ? 'true' : 'false'"
   language="es"
-  onlychat="false">
+  isonlychat="false">
 </sofia-sdk>
 ```
 
