@@ -308,6 +308,7 @@ angular.module('myApp').controller('MainController', [
      */
     $scope.initializeEnvironment = function(config) {
       $scope.patientId = config.patientId;
+      $scope.templateId = config.templateId;
       $scope.userId = config.userId;
       $scope.baseUrl = config.baseUrl;
       $scope.wssUrl = config.wssUrl;
@@ -359,6 +360,7 @@ angular.module('myApp').controller('MainController', [
       
       // Set all basic attributes
       component.setAttribute('patientid', $scope.patientId);
+      component.setAttribute('templateid', $scope.templateId);
       component.setAttribute('userid', $scope.userId);
       component.setAttribute('apikey', $scope.apiKey);
       component.setAttribute('baseurl', $scope.baseUrl);

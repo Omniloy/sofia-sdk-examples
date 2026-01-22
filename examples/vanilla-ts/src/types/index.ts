@@ -4,6 +4,7 @@ export interface AppConfig {
   baseUrl: string;
   wssUrl: string;
   apiKey: string;
+  templateId: string;
   isOpen: boolean;
   patientData?: PatientData;
 }

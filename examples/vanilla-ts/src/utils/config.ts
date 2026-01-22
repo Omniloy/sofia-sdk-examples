@@ -7,8 +7,9 @@ export async function loadConfig(): Promise<AppConfig> {
     const envConfig = await response.json();
     
     return {
-      patientId: envConfig.sdk?.defaultPatientId || 'YOUR_DEFAULT_PATIENT_ID',
-      userId: envConfig.sdk?.defaultUserId || 'YOUR_DEFAULT_USER_ID', 
+      patientId: envConfig.sdk?.patientId || 'YOUR_DEFAULT_PATIENT_ID',
+      templateId: envConfig.sdk?.templateId || 'YOUR_TEMPLATE_ID',
+      userId: envConfig.sdk?.userId || 'YOUR_DEFAULT_USER_ID', 
       baseUrl: envConfig.sdk?.baseUrl || 'YOUR_BASE_URL',
       wssUrl: envConfig.sdk?.wssUrl || 'YOUR_WSS_URL',
       apiKey: envConfig.sdk?.apiKey || 'YOUR_API_KEY',
@@ -18,6 +19,7 @@ export async function loadConfig(): Promise<AppConfig> {
     console.warn('Could not load environment.json, using placeholder defaults');
     return {
       patientId: 'YOUR_DEFAULT_PATIENT_ID',
+      templateId: 'YOUR_TEMPLATE_ID',
       userId: 'YOUR_DEFAULT_USER_ID',
       baseUrl: 'YOUR_BASE_URL', 
       wssUrl: 'YOUR_WSS_URL',
@@ -34,6 +36,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   baseUrl: 'YOUR_BASE_URL',
   wssUrl: 'YOUR_WSS_URL', 
   apiKey: 'YOUR_API_KEY',
+  templateId: 'YOUR_TEMPLATE_ID',
   isOpen: true
 };
 

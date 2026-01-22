@@ -66,8 +66,9 @@ export class SofIA {
             baseUrl: envData.sdk.baseUrl || this.config.baseUrl,
             wssUrl: envData.sdk.wssUrl || this.config.wssUrl, 
             apiKey: envData.sdk.apiKey || this.config.apiKey,
-            patientId: envData.sdk.defaultPatientId || this.config.patientId,
-            userId: envData.sdk.defaultUserId || this.config.userId,
+            patientId: envData.sdk.patientId || this.config.patientId,
+            userId: envData.sdk.userId || this.config.userId,
+            templateId: envData.sdk.templateId || this.config.templateId,
             isOpen: envData.sdk.isOpen ?? this.config.isOpen
           };
           
@@ -174,6 +175,7 @@ export class SofIA {
     // Set attributes
     component.setAttribute('patientid', this.config.patientId);
     component.setAttribute('userid', this.config.userId);
+    component.setAttribute('templateid', this.config.templateId);
     component.setAttribute('apikey', this.config.apiKey);
     component.setAttribute('baseurl', this.config.baseUrl);
     component.setAttribute('wssurl', this.config.wssUrl);
