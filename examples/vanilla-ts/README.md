@@ -58,7 +58,7 @@ Then open: http://localhost:5173
 1. **Install Sofia SDK dependency**:
 
 ```bash
-npm install @omniloy/sofia-sdk@0.0.9
+npm install @omniloy/sofia-sdk@0.0.10
 ```
 
 2. **Import Sofia SDK** (in main.ts):
@@ -127,7 +127,7 @@ This example includes a comprehensive development environment:
 
 ## 🔍 Troubleshooting
 
-- **Component not loading** → Ensure Sofia SDK is installed: `npm install @omniloy/sofia-sdk@0.0.9`
+- **Component not loading** → Ensure Sofia SDK is installed: `npm install @omniloy/sofia-sdk@0.0.10`
 - **Callbacks not firing** → Check you're assigning handleReport and setIsOpen after creating the component
 - **Boolean attributes** → Must be strings ("true" / "false") when using setAttribute
 - **Configuration issues** → Verify environment.json has correct placeholder format
@@ -136,7 +136,7 @@ This example includes a comprehensive development environment:
 
 - **Vite** 7
 - **TypeScript** 5.8
-- **Sofia SDK**: @omniloy/sofia-sdk@0.0.9
+- **Sofia SDK**: @omniloy/sofia-sdk@0.0.10
 - **No framework dependencies** (pure vanilla TypeScript)
 
 ## 🌐 Browser compatibility
