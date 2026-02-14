@@ -1,6 +1,6 @@
 {
   "name": "sofia-sdk-examples",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "description": "Sofia SDK Integration Examples - Complete implementation showcases for Vanilla TypeScript, Angular, and AngularJS development tools, dynamic configuration, and real-time debugging capabilities",
   "scripts": {
     "prepare": "husky install",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/omniloy/sofia-examples.git"
+    "url": "git+https://github.com/omniloy/sofia-sdk-examples.git"
   },
   "keywords": [
     "sofia",

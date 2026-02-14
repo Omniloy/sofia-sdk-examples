@@ -446,6 +446,81 @@
   gap: 8px;
 }
 
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .header-text h1 {
+    font-size: 24px;
+  }
+  
+  .header-text p {
+    font-size: 15px;
+  }
+  
+  .omniloy-logo {
+    height: 40px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .controls {
+    flex-direction: column;
+  }
+  
+  .btn {
+    justify-content: center;
+  }
+  
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .status-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .tools-args-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .tools-args-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .tools-args-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .patient-data-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .patient-data-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
 /* Toggle Control Styles */
 .config-header {
   margin-bottom: 16px;
@@ -521,79 +596,4 @@
   color: #666;
   font-size: 14px;
   margin-left: 56px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .container {
-    padding: 16px;
-  }
-  
-  .header-content {
-    flex-direction: column;
-    text-align: center;
-    gap: 16px;
-  }
-  
-  .header-text h1 {
-    font-size: 24px;
-  }
-  
-  .header-text p {
-    font-size: 15px;
-  }
-  
-  .omniloy-logo {
-    height: 40px;
-  }
-  
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .controls {
-    flex-direction: column;
-  }
-  
-  .btn {
-    justify-content: center;
-  }
-  
-  .status-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .status-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  
-  .tools-args-section {
-    grid-template-columns: 1fr;
-  }
-  
-  .tools-args-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .tools-args-controls {
-    width: 100%;
-    justify-content: flex-start;
-  }
-  
-  .patient-data-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .patient-data-controls {
-    width: 100%;
-    justify-content: flex-start;
-  }
 }

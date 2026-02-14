@@ -62,6 +62,11 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+.sofia-container {
+  min-height: 600px;
+  width: 100%;
+}
+
 /* Debug Section */
 .debug-section {
   background: white;
@@ -225,7 +230,7 @@
   font-weight: 600;
 }
 
-/* Tools Arguments Section */
+/* Template Editor Section */
 .tools-args-header {
   display: flex;
   justify-content: space-between;
@@ -253,16 +258,14 @@
   gap: 20px;
 }
 
-.tools-args-preview,
-.tools-args-info {
+.tools-args-preview {
   background: #f8f9fa;
   border: 1px solid #e9ecef;
   border-radius: 6px;
   padding: 16px;
 }
 
-.tools-args-preview h4,
-.tools-args-info h4 {
+.tools-args-preview h4 {
   margin: 0 0 12px 0;
   color: #495057;
   font-size: 14px;
@@ -523,75 +526,80 @@
   margin-left: 56px;
 }
 
+/* AngularJS specific */
+[ng-cloak] {
+  display: none !important;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .container {
     padding: 16px;
   }
-  
+
   .header-content {
     flex-direction: column;
     text-align: center;
     gap: 16px;
   }
-  
+
   .header-text h1 {
     font-size: 24px;
   }
-  
+
   .header-text p {
     font-size: 15px;
   }
-  
+
   .omniloy-logo {
     height: 40px;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .controls {
     flex-direction: column;
   }
-  
+
   .btn {
     justify-content: center;
   }
-  
+
   .status-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .status-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .tools-args-section {
     grid-template-columns: 1fr;
   }
-  
+
   .tools-args-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .tools-args-controls {
     width: 100%;
     justify-content: flex-start;
   }
-  
+
   .patient-data-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .patient-data-controls {
     width: 100%;
     justify-content: flex-start;

@@ -1,14 +1,15 @@
 import './style.css';
+import '@omniloy/sofia-sdk';
 import { SofIA } from './components/SofIA';
 
 let app: SofIA | null = null;
 
 async function init() {
   if (app) app.destroy();
-  
+
   app = new SofIA();
   await app.init();
-  
+
   if (import.meta.env.DEV) {
     (window as any).app = app;
   }
@@ -22,6 +23,6 @@ if (import.meta.hot) {
   });
 }
 
-document.readyState === 'loading' 
+document.readyState === 'loading'
   ? document.addEventListener('DOMContentLoaded', init, { once: true })
   : init();

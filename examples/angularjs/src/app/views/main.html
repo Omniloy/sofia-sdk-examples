@@ -1,0 +1,247 @@
+<div class="container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-logo">
+        <img src="assets/logo.svg" alt="Omniloy" class="omniloy-logo" />
+      </div>
+      <div class="header-text">
+        <h1>SofIA SDK - AngularJS</h1>
+        <p>Live development environment with dynamic configuration and real-time debugging tools.
+          <a href="https://omniloy.mintlify.app/en" target="_blank" rel="noopener noreferrer">View Documentation</a>
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Configuration Error Banner -->
+  <div ng-if="configError" style="padding:20px;margin:16px;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;color:#991b1b;font-family:system-ui,sans-serif;">
+    <strong>Configuration Error</strong>
+    <p style="margin:8px 0 0">{{configError}}</p>
+    <p style="margin:8px 0 0">Contact <a href="mailto:enrique.alcazar@omniloy.com">enrique.alcazar@omniloy.com</a> to obtain credentials.</p>
+  </div>
+
+  <!-- Sofia Component -->
+  <div class="sofia-wrapper">
+    <div class="sofia-container">
+      <sofia-sdk id="sofia-component"
+        ng-if="baseUrl && wssUrl && patientId"
+        patientid="{{patientId}}"
+        userid="{{userId}}"
+        templateid="{{templateId}}"
+        apikey="{{apiKey}}"
+        baseurl="{{baseUrl}}"
+        wssurl="{{wssUrl}}"
+        isopen="{{isOpen}}"
+        language="{{language}}"
+        ng-attr-debug="{{debug ? 'true' : undefined}}"
+      ></sofia-sdk>
+    </div>
+  </div>
+
+  <!-- Debug Controls -->
+  <div class="debug-section">
+    <div class="section-header">
+      <h2>SDK Development Console</h2>
+    </div>
+    <div class="debug-panel">
+      <!-- Component Controls -->
+      <div class="control-group">
+        <h3>SDK Runtime Controls</h3>
+        <div class="controls">
+          <button type="button" ng-click="toggleIsOpen()" class="btn btn-primary">
+            <span ng-show="isOpen">Close Sofia SDK</span>
+            <span ng-show="!isOpen">Open Sofia SDK</span>
+          </button>
+          <button type="button" ng-click="getLastReport()" ng-disabled="!getLastReportFn" class="btn btn-secondary">
+            Get Last Report
+          </button>
+          <button type="button" ng-click="clearReports()" class="btn btn-outline">
+            Clear Reports
+          </button>
+          <button type="button" ng-click="refreshComponent()" class="btn btn-outline">
+            Reload SDK Component
+          </button>
+        </div>
+      </div>
+
+      <!-- Status Information -->
+      <div class="control-group">
+        <h3>SDK State Monitor</h3>
+        <div class="status-grid">
+          <div class="status-item">
+            <span class="status-label">Component Mounted:</span>
+            <span class="status-value success" ng-show="componentInitialized">Yes</span>
+            <span class="status-value error" ng-show="!componentInitialized">No</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">SDK State:</span>
+            <span class="status-value success" ng-show="isOpen">Open</span>
+            <span class="status-value neutral" ng-show="!isOpen">Closed</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Report Handler:</span>
+            <span class="status-value success" ng-show="getLastReportFn">Available</span>
+            <span class="status-value error" ng-show="!getLastReportFn">Not Available</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Event Count:</span>
+            <span class="status-value neutral">{{reports.length || 0}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Template Editor -->
+      <div class="control-group">
+        <div class="tools-args-header">
+          <h3>Template Configuration</h3>
+          <div class="tools-args-controls">
+            <button type="button" ng-click="toggleTemplateEditor()" class="btn btn-outline">
+              <span ng-show="isEditingTemplate">Cancel</span>
+              <span ng-show="!isEditingTemplate">Edit Template</span>
+            </button>
+            <button type="button" ng-show="isEditingTemplate" ng-click="applyTemplate()" ng-disabled="templateError" class="btn btn-primary">
+              Apply Changes
+            </button>
+          </div>
+        </div>
+
+        <div class="tools-args-section" ng-show="!isEditingTemplate">
+          <div class="tools-args-preview">
+            <h4>Current Template:</h4>
+            <pre class="json-display">{{templateObject | json}}</pre>
+          </div>
+        </div>
+
+        <div class="tools-args-editor" ng-show="isEditingTemplate">
+          <div class="editor-header">
+            <h4>Edit Template JSON:</h4>
+          </div>
+          <textarea
+            ng-model="templateString"
+            ng-change="validateTemplate()"
+            placeholder="Enter valid JSON for template configuration..."
+            rows="8"
+            class="json-editor"
+            ng-class="{'error': templateError}"></textarea>
+          <div ng-show="templateError" class="error-message">{{templateError}}</div>
+
+          <div class="editor-footer">
+            <small class="editor-hint">
+              Define the JSON Schema template for report generation (valid JSON required)
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Template ID -->
+      <div class="control-group">
+        <div class="tools-args-header">
+          <h3>Template ID</h3>
+          <div class="tools-args-controls">
+            <button type="button" ng-click="applyTemplateId()" class="btn btn-primary">
+              Apply
+            </button>
+          </div>
+        </div>
+        <div class="templateid-section">
+          <div class="templateid-preview">
+            <span class="status-label">Current Template ID:</span>
+            <span class="status-value neutral">{{templateId || 'Not set'}}</span>
+          </div>
+          <div class="templateid-editor">
+            <input
+              type="text"
+              ng-model="templateId"
+              placeholder="Enter template ID..."
+              class="title-input" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Debug Toggle -->
+      <div class="control-group">
+        <div class="config-header">
+          <h3>Debug Mode</h3>
+        </div>
+        <div class="config-section">
+          <div class="toggle-control">
+            <label class="toggle-label">
+              <input
+                type="checkbox"
+                ng-model="debug"
+                ng-change="updateDebug()"
+                class="toggle-checkbox" />
+              <span class="toggle-text" ng-bind="debug ? 'Debug Mode: ON' : 'Debug Mode: OFF'"></span>
+            </label>
+            <div class="toggle-description">
+              Enable debug logging in the SDK console output
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Patient Data Editor -->
+      <div class="control-group">
+        <div class="patient-data-header">
+          <h3>Patient Data Configuration</h3>
+          <div class="patient-data-controls">
+            <button type="button" ng-click="togglePatientDataEditor()" class="btn btn-outline">
+              <span ng-show="isEditingPatientData">Cancel</span>
+              <span ng-show="!isEditingPatientData">Edit Patient Data</span>
+            </button>
+            <button type="button" ng-show="isEditingPatientData" ng-click="applyPatientData()" ng-disabled="patientDataError" class="btn btn-primary">
+              Apply Changes
+            </button>
+          </div>
+        </div>
+
+        <div class="patient-data-section" ng-show="!isEditingPatientData">
+          <div class="patient-data-preview">
+            <h4>Current Patient Data:</h4>
+            <pre class="json-display">{{patientData | json}}</pre>
+          </div>
+        </div>
+
+        <div class="patient-data-editor" ng-show="isEditingPatientData">
+          <div class="editor-header">
+            <h4>Edit Patient Data JSON:</h4>
+          </div>
+          <textarea
+            ng-model="patientDataString"
+            ng-change="validatePatientData()"
+            placeholder="Enter valid JSON for patient data..."
+            rows="8"
+            class="json-editor"
+            ng-class="{'error': patientDataError}"></textarea>
+          <div ng-show="patientDataError" class="error-message">{{patientDataError}}</div>
+
+          <div class="editor-footer">
+            <small class="editor-hint">
+              Define patient information for the Sofia SDK (valid JSON required)
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Data -->
+      <div class="control-group" ng-show="lastReport || retrievedReport">
+        <h3>Report Data</h3>
+
+        <div ng-show="lastReport" class="data-section">
+          <h4>Last Received Report:</h4>
+          <pre class="json-display">{{lastReport | json}}</pre>
+        </div>
+
+        <div ng-show="retrievedReport && retrievedReport !== 'Loading...'" class="data-section">
+          <h4>Retrieved Report:</h4>
+          <pre class="json-display">{{retrievedReport | json}}</pre>
+        </div>
+
+        <div ng-show="retrievedReport === 'Loading...'" class="data-section">
+          Loading report...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
