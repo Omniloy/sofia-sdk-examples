@@ -128,29 +128,7 @@ angular.module('myApp').controller('MainController', [
       }
     };
 
-    /**
-     * Clear all reports
-     */
-    $scope.clearReports = function() {
-      $scope.reports = [];
-      $scope.lastReport = null;
-      $scope.retrievedReport = null;
-    };
 
-    /**
-     * Refresh the component
-     */
-    $scope.refreshComponent = function() {
-      // Remove previous event listeners to prevent leaks
-      eventListeners.forEach(function(entry) {
-        entry.element.removeEventListener(entry.event, entry.handler);
-      });
-      eventListeners = [];
-      $scope.componentInitialized = false;
-      $timeout(function() {
-        $scope.setupComponentWithRetry(3, 500);
-      }, 100);
-    };
 
     // =============================================================================
     // DEBUG TOGGLE METHOD

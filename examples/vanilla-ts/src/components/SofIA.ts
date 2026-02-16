@@ -109,8 +109,6 @@ export class SofIA {
 
     track('toggle-open-btn', 'click', () => this.toggleIsOpen());
     track('see-report-btn', 'click', () => this.getLastReport());
-    track('clear-reports-btn', 'click', () => this.clearReports());
-    track('refresh-component-btn', 'click', () => this.refreshComponent());
     track('toggle-template-editor', 'click', () => this.toggleTemplateEditor());
     track('apply-template', 'click', () => this.applyTemplate());
     track('template-json-editor', 'input', () => this.validateTemplate());
@@ -289,20 +287,6 @@ export class SofIA {
     }
   }
 
-  private clearReports() {
-    this.reports = [];
-    this.lastReportData = null;
-    this.retrievedReportData = null;
-    this.hideReportData();
-    this.updateUI();
-  }
-
-  private refreshComponent() {
-    this.destroy();
-    setTimeout(() => {
-      this.setupComponent();
-    }, 100);
-  }
 
   // Debug toggle
   private updateDebug() {
@@ -359,15 +343,6 @@ export class SofIA {
     }
   }
 
-  private hideReportData() {
-    const reportSection = document.getElementById('report-data-section');
-    const lastReportSection = document.getElementById('last-report-section');
-    const retrievedReportSection = document.getElementById('retrieved-report-section');
-
-    if (reportSection) reportSection.style.display = 'none';
-    if (lastReportSection) lastReportSection.style.display = 'none';
-    if (retrievedReportSection) retrievedReportSection.style.display = 'none';
-  }
 
   // Template Editor Methods
   private toggleTemplateEditor() {

@@ -88,12 +88,6 @@ declare global {
               <button (click)="getLastReport()" [disabled]="!getLastReportFn" class="btn btn-secondary">
                 Get Last Report
               </button>
-              <button (click)="clearReports()" class="btn btn-outline">
-                Clear Reports
-              </button>
-              <button (click)="refreshComponent()" class="btn btn-outline">
-                Reload SDK Component
-              </button>
             </div>
           </div>
 
@@ -627,23 +621,6 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Clears all report data
-   */
-  clearReports() {
-    this.lastReportData = null;
-    this.retrievedReportData = null;
-    this.reports = [];
-  }
-
-  /**
-   * Refreshes the component by reinitializing it
-   */
-  refreshComponent() {
-    this.componentInitialized = false;
-    this.getLastReportFn = null;
-    this.setupComponentWithRetry(5, 300);
-  }
 
   /**
    * Toggles the template editor
