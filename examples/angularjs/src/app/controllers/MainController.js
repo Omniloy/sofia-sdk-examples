@@ -109,7 +109,13 @@ angular.module('myApp').controller('MainController', [
      */
     $scope.toggleIsOpen = function() {
       $scope.isOpen = !$scope.isOpen;
-      $scope.updateComponentIsOpen();
+      var component = document.getElementById('sofia-component');
+      if (component) {
+        component.setAttribute('isopen', $scope.isOpen ? 'true' : 'false');
+        if (typeof component.setIsOpen === 'function') {
+          component.setIsOpen($scope.isOpen);
+        }
+      }
     };
 
     /**
@@ -341,7 +347,11 @@ angular.module('myApp').controller('MainController', [
       }
 
       $scope.validateConfig(config);
-      $scope.setupComponentWithRetry(3, 500);
+      $scope.configLoaded = true;
+      // Defer setup to next digest cycle so ng-if renders the element first
+      $timeout(function() {
+        $scope.setupComponentWithRetry(3, 500);
+      }, 0);
     };
 
     /**

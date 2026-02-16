@@ -83,8 +83,8 @@ export class SofIA {
             baseUrl: envData.sdk.baseUrl || this.config.baseUrl,
             wssUrl: envData.sdk.wssUrl || this.config.wssUrl,
             apiKey: envData.sdk.apiKey || this.config.apiKey,
-            patientId: envData.sdk.patientId || this.config.patientId,
-            userId: envData.sdk.userId || this.config.userId,
+            patientId: envData.sdk.patientId || envData.sdk.defaultPatientId || this.config.patientId,
+            userId: envData.sdk.userId || envData.sdk.defaultUserId || this.config.userId,
             templateId: envData.sdk.templateId || this.config.templateId,
             language: envData.sdk.language || this.config.language,
             isOpen: envData.sdk.isOpen ?? this.config.isOpen

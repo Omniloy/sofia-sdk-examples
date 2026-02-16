@@ -62,11 +62,6 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.sofia-container {
-  min-height: 600px;
-  width: 100%;
-}
-
 /* Debug Section */
 .debug-section {
   background: white;
