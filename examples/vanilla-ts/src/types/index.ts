@@ -5,6 +5,7 @@ export interface AppConfig {
   wssUrl: string;
   apiKey: string;
   templateId: string;
+  language?: string;
   isOpen: boolean;
   patientData?: PatientData;
 }
@@ -16,6 +17,7 @@ export interface PatientData {
   phone: string;
   address: string;
 }
+
 declare global {
   interface HTMLElementTagNameMap {
     'sofia-sdk': HTMLElement & {
@@ -23,15 +25,8 @@ declare global {
       handleReport: (report: unknown) => void;
       setGetLastReport: (fn: () => Promise<unknown>) => void;
       setIsOpen: (newState: boolean | ((prevState: boolean) => boolean)) => void;
-      toast?: {
-        title: string;
-        message: string;
-        visible: string;
-        variation: string;
-      };
     };
   }
 }
-
 
 export {};

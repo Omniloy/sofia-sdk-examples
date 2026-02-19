@@ -19,7 +19,8 @@ out/
 .env.test.local
 .env.production.local
 examples/vanilla-ts/public/assets/environment.json
-examples/angular-js/src/assets/environment.json
+examples/angular/environment.ts
+examples/angularjs/src/assets/environment.json
 
 # Security scan reports
 security-report.json
@@ -112,11 +113,9 @@ jspm_packages/
 tmp/
 temp/
 
-# Package manager lock files (keep only one)
-package-lock.json
+# Package manager lock files (keep only package-lock.json)
 pnpm-lock.yaml
 yarn.lock
-# Keep pnpm-lock.yaml for vanilla-ts example
 
 # API keys and credentials (extra safety)
 *api-key*

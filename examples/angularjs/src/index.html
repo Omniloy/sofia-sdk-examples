@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+  <meta charset="UTF-8">
+  <title>SofIA SDK - AngularJS</title>
+  <link rel="stylesheet" href="index.css">
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+
+  <!-- Load web components FIRST to ensure they're registered before Angular -->
+  <script src="https://unpkg.com/@omniloy/sofia-sdk@1.0.0/dist/webcomponents.umd.js" integrity="sha384-Yk5W3oNdsPlaTZrkx7CaCG2LJaK5otsAU76kSkABwoqc/7jU/dMpfGgfu8nQMKJJ" crossorigin="anonymous"></script>
+  <script src="assets/template.js"></script>
+
+  <!-- Load Angular only after web components script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js" integrity="sha384-quGekMf1ic6tIOn1GgLl0Pzra4ZkFyTcaDW3hZRjORqPQe3HnTKGl+lNPpuh7Lwv" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-route/1.8.3/angular-route.min.js" integrity="sha384-GUr83+aavTyvG3ZyYnugDUUWJPbR17hnss+71fSB2Lqaa9VhvJLRHfvSp07LUGub" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div ng-view ng-cloak></div>
+
+  <!-- Application Scripts -->
+  <script src="app/app.js"></script>
+  <script src="app/controllers/MainController.js"></script>
+
+</body>
+</html>

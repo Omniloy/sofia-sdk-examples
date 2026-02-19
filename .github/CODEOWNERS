@@ -11,5 +11,5 @@ LICENSE @jordigiam @laupucci @kikoncuo
 
 # Example-specific ownership
 /examples/vanilla-ts/ @jordigiam @laupucci @kikoncuo
-/examples/angular-ts/ @jordigiam @laupucci @kikoncuo
-/examples/angular-js/ @jordigiam @laupucci @kikoncuo
+/examples/angular/ @jordigiam @laupucci @kikoncuo
+/examples/angularjs/ @jordigiam @laupucci @kikoncuo

@@ -1,14 +1,12 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sofia SDK • Vanilla TypeScript Integration</title>
+  <title>SofIA SDK - Vanilla TypeScript</title>
   <link rel="icon" type="image/svg+xml" href="/assets/logo.svg" />
 </head>
 <body>
-    <script src="/node_modules/@omniloy/sofia-sdk/dist/webcomponents.umd.js"></script>
-  
   <div class="container">
     <!-- Header -->
     <header class="header">
@@ -17,8 +15,10 @@
           <img src="/assets/logo.svg" alt="Omniloy" class="omniloy-logo" />
         </div>
         <div class="header-text">
-          <h1>Sofia SDK • Vanilla TypeScript Integration</h1>
-          <p>Live development environment with dynamic configuration, real-time debugging tools, and complete SDK integration patterns</p>
+          <h1>SofIA SDK - Vanilla TypeScript</h1>
+          <p>Live development environment with dynamic configuration, real-time debugging tools, and complete SDK integration patterns.
+            <a href="https://omniloy.mintlify.app/en" target="_blank" rel="noopener noreferrer">View docs</a>
+          </p>
         </div>
       </div>
     </header>
@@ -43,12 +43,6 @@
             </button>
             <button id="see-report-btn" class="btn btn-secondary" disabled>
               Get Last Report
-            </button>
-            <button id="clear-reports-btn" class="btn btn-outline">
-              Clear Reports
-            </button>
-            <button id="refresh-component-btn" class="btn btn-outline">
-              Reload SDK Component
             </button>
           </div>
         </div>
@@ -76,87 +70,87 @@
           </div>
         </div>
 
-        <!-- Title Editor -->
+        <!-- Template Editor -->
         <div class="control-group">
-          <div class="patient-data-header">
-            <h3>Title Configuration</h3>
-            <div class="patient-data-controls">
-              <button id="toggle-title-editor" class="btn btn-outline">
-                Edit Title
+          <div class="tools-args-header">
+            <h3>Template Configuration</h3>
+            <div class="tools-args-controls">
+              <button id="toggle-template-editor" class="btn btn-outline">
+                Edit Template
               </button>
-              <button id="apply-title" class="btn btn-primary" style="display: none;">
+              <button id="apply-template" class="btn btn-primary" style="display: none;">
                 Apply Changes
               </button>
             </div>
           </div>
-          
-          <div class="patient-data-section" id="title-preview">
-            <div class="patient-data-preview">
-              <h4>Current Title:</h4>
-              <div class="title-display" id="title-display">Sofia Assistant</div>
+
+          <div class="tools-args-section" id="template-preview">
+            <div class="tools-args-preview">
+              <h4>Current Template:</h4>
+              <pre class="json-display" id="template-display"></pre>
             </div>
           </div>
 
-          <div class="patient-data-editor" id="title-editor" style="display: none;">
-            <div class="editor-section">
-              <h4>Edit Title:</h4>
-              <input 
-                type="text" 
-                id="title-input"
-                class="title-input"
-                placeholder="Enter SDK title..."
-                maxlength="100" />
-              <div id="title-error" class="error-message" style="display: none;"></div>
-              
-              <div class="editor-footer">
-                <small class="editor-hint">
-                  💡 Title configuration: Set the display title for the Sofia SDK (max 100 chars)
-                </small>
-              </div>
+          <div class="tools-args-editor" id="template-editor" style="display: none;">
+            <div class="editor-header">
+              <h4>Edit Template JSON:</h4>
+            </div>
+            <textarea
+              id="template-json-editor"
+              class="json-editor"
+              placeholder="Enter valid JSON for template configuration..."></textarea>
+            <div id="template-error" class="error-message" style="display: none;"></div>
+
+            <div class="editor-footer">
+              <small class="editor-hint">
+                Define the JSON Schema template for report generation (valid JSON required)
+              </small>
             </div>
           </div>
         </div>
 
-        <!-- ToolArgs Editor -->
+        <!-- Template ID -->
         <div class="control-group">
           <div class="tools-args-header">
-            <h3>Tools Arguments Configuration</h3>
+            <h3>Template ID</h3>
             <div class="tools-args-controls">
-              <button id="toggle-toolargs-editor" class="btn btn-outline">
-                Edit ToolArgs
-              </button>
-              <button id="apply-toolargs" class="btn btn-primary" style="display: none;">
-                Apply Changes
+              <button id="apply-templateid" class="btn btn-primary">
+                Apply
               </button>
             </div>
           </div>
-          
-          <div class="tools-args-section" id="toolargs-preview">
-            <div class="tools-args-preview">
-              <h4>Current ToolArgs:</h4>
-              <pre class="json-display" id="toolargs-display"></pre>
+          <div class="templateid-section">
+            <div class="templateid-preview">
+              <span class="status-label">Current Template ID:</span>
+              <span class="status-value neutral" id="templateid-display">Not set</span>
             </div>
-            <div class="tools-args-info">
-              <h4>Configuration Info:</h4>
-              <div class="config-item"><strong>Tools:</strong> <span id="tools-count">0</span></div>
-              <div class="config-item"><strong>Last Modified:</strong> <span id="toolargs-last-modified">Never</span></div>
+            <div class="templateid-editor">
+              <input
+                type="text"
+                id="templateid-input"
+                class="title-input"
+                placeholder="Enter template ID..." />
             </div>
           </div>
+        </div>
 
-          <div class="tools-args-editor" id="toolargs-editor" style="display: none;">
-            <div class="editor-header">
-              <h4>Edit ToolArgs JSON:</h4>
-            </div>
-            <textarea 
-              id="toolargs-json-editor" 
-              class="json-editor"
-              placeholder="Enter valid JSON for tools arguments..."></textarea>
-            <div id="toolargs-error" class="error-message" style="display: none;"></div>
-            
-            <div class="editor-footer">
-              <small class="editor-hint">
-                💡 ToolArgs configuration: Define tools and their arguments for the Sofia SDK (valid JSON required)
-              </small>
+        <!-- Debug Toggle -->
+        <div class="control-group">
+          <div class="config-header">
+            <h3>Debug Mode</h3>
+          </div>
+          <div class="config-section">
+            <div class="toggle-control">
+              <label class="toggle-label">
+                <input
+                  type="checkbox"
+                  id="debug-toggle"
+                  class="toggle-checkbox" />
+                <span class="toggle-text" id="debug-text">Debug Mode: OFF</span>
+              </label>
+              <div class="toggle-description">
+                Enable debug logging in the SDK console output
+              </div>
             </div>
           </div>
         </div>
@@ -174,7 +168,7 @@
               </button>
             </div>
           </div>
-          
+
           <div class="patient-data-section" id="patientdata-preview">
             <div class="patient-data-preview">
               <h4>Current Patient Data:</h4>
@@ -185,37 +179,16 @@
           <div class="patient-data-editor" id="patientdata-editor" style="display: none;">
             <div class="editor-section">
               <h4>Edit Patient Data JSON:</h4>
-              <textarea 
-                id="patientdata-json-editor" 
+              <textarea
+                id="patientdata-json-editor"
                 class="json-editor"
                 placeholder="Enter valid JSON for patient data..."></textarea>
               <div id="patientdata-error" class="error-message" style="display: none;"></div>
-              
+
               <div class="editor-footer">
                 <small class="editor-hint">
-                  💡 Patient Data configuration: Define patient information for the Sofia SDK (valid JSON required)
+                  Define patient information for the Sofia SDK (valid JSON required)
                 </small>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Only Chat Control -->
-        <div class="control-group">
-          <div class="config-header">
-            <h3>Only Chat Mode</h3>
-          </div>
-          <div class="config-section">
-            <div class="toggle-control">
-              <label class="toggle-label">
-                <input 
-                  type="checkbox" 
-                  id="only-chat-toggle"
-                  class="toggle-checkbox" />
-                <span class="toggle-text" id="only-chat-text">Only Chat Mode: OFF</span>
-              </label>
-              <div class="toggle-description" id="only-chat-description">
-                Full interface with all features
               </div>
             </div>
           </div>
@@ -224,12 +197,12 @@
         <!-- Report Data -->
         <div class="control-group" id="report-data-section" style="display: none;">
           <h3>Report Data</h3>
-          
+
           <div id="last-report-section" style="display: none;" class="data-section">
             <h4>Last Received Report:</h4>
             <pre class="json-display" id="last-report-content"></pre>
           </div>
-          
+
           <div id="retrieved-report-section" style="display: none;" class="data-section">
             <h4>Retrieved Report:</h4>
             <pre class="json-display" id="retrieved-report-content"></pre>

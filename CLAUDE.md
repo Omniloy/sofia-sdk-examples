@@ -1,0 +1,141 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Purpose
+
+Public repository with working examples showing how to integrate the Sofia SDK (`@omniloy/sofia-sdk`) into different web frameworks. Each example is a dev playground with debug console, JSON editors, state monitors, and report tracking.
+
+## Development Commands
+
+Each example is independent (no monorepo workspaces). Always `cd` into the example directory first.
+
+| Example | Install | Dev Server | Build | Port |
+|---|---|---|---|---|
+| `examples/vanilla-ts` | `npm install` | `npm run dev` | `npm run build` (tsc + vite) | 5173 |
+| `examples/angular` | `npm install` | `npm start` (ng serve) | `npm run build` | 4200 |
+| `examples/angularjs` | `npm install` | `npm run dev` (http-server) | N/A (static files) | 8000 |
+
+Angular also has `npm test` (Karma). The other examples have no test suites.
+
+Root-level scripts (run from repo root):
+- `npm run security` — runs both Trivy vulnerability scan and GitLeaks secret detection
+
+## Architecture
+
+### SDK Integration Pattern
+
+All examples integrate the same `<sofia-sdk>` web component with three different approaches:
+
+- **vanilla-ts**: ES6 class (`SofIA`) in `src/components/SofIA.ts` manages the component lifecycle. Config loaded via `fetch('/assets/environment.json')` at runtime. Vite bundles the SDK.
+- **angular**: Angular standalone component (`OmniscribeDemoComponent`) in `src/app/sofia.component.ts` with `[attr.*]` bindings. Config imported from `environment.ts`. Angular CLI bundles the SDK.
+- **angularjs**: AngularJS controller (`MainController`) in `src/app/controllers/MainController.js` with `$scope` bindings. Config loaded via `$http.get('assets/environment.json')`. SDK loaded from CDN via `<script>` tag (pinned to `@1.0.0`, no bundler). Has a retry mechanism for component initialization (3 attempts).
+
+### Configuration Flow
+
+Each example follows: load environment config → create `<sofia-sdk>` element → set HTML attributes (lowercase) → attach three required callbacks → append to DOM.
+
+### Template Configuration
+
+Template definitions live in separate files:
+- `examples/vanilla-ts/src/utils/config.ts` — `TEMPLATE_CONFIG` constant
+- `examples/angular/src/app/template/Template.ts` — default export
+- `examples/angularjs/src/assets/template.js` — global `Template` object
+
+## SDK Property Naming
+
+HTML attributes are **lowercase** (web component standard):
+- `baseurl`, `wssurl`, `apikey`, `userid`, `patientid`
+- `template`, `templateid`, `patientdata`
+- `isopen`, `language`, `debug`
+
+## Deprecated Properties (as of v0.0.10)
+
+Do NOT use these in examples:
+
+| Deprecated | Replacement |
+|---|---|
+| `toolsargs` / `toolsArgs` | `template` |
+| `sofiatitle` / `sofiaTitle` | Remove (title is always "SofIA") |
+| `isonlychat` / `onlyChat` | Auto-detected (omit `template`/`templateid` for chat-only) |
+| `disableactions` | Don't mount the component |
+| `disablegenerate` | Omit `template`/`templateid` |
+| `isscreenloading` | Not available in Chat-based UI |
+| `transcriptorselectvalues` | No effect |
+| `render-report-content` | Not available in Chat-based UI |
+| `handleFill` | Not available in Chat-based UI |
+| `toast` | No effect |
+
+## Report Generation
+
+The generate button only appears when **both** `template` AND `templateid` are provided. Without them, SofIA operates in chat-only mode automatically.
+
+## SDK Callbacks & Events
+
+Three required callbacks on the `<sofia-sdk>` element:
+
+```javascript
+component.handleReport = (report) => { /* receives generated report */ };
+component.setIsOpen = (valueOrFn) => { /* controls widget visibility */ };
+component.setGetLastReport = (fn) => { /* exposes async function to retrieve last report */ };
+```
+
+Custom DOM events: `handle-report`, `set-is-open`, `set-get-last-report`
+
+## Template Field Properties
+
+- `isConfigurable` (default: `true`) — controls whether the healthcare professional can edit the generated field
+- `source` — enables normalization with standard medical terminologies. Supported: `"ICD10"`, `"cie_latam"`
+
+## Environment Configuration
+
+Each example has an environment **example** file with placeholder values (the actual env files are gitignored):
+
+| Example | Example file | Actual file (gitignored) |
+|---|---|---|
+| `vanilla-ts` | `public/assets/environment.example.json` | `public/assets/environment.json` |
+| `angular` | `environment.example.ts` | `environment.ts` |
+| `angularjs` | `src/assets/environment.example.json` | `src/assets/environment.json` |
+
+For AngularJS, copy `src/assets/environment.example.json` to `src/assets/environment.json` and fill in your credentials.
+
+## UI Consistency
+
+All three examples must share the same visual design and dev console layout:
+
+1. **Header**: Omniloy logo + "SofIA SDK - [Framework Name]" + link to docs
+2. **Main Area**: `<sofia-sdk>` component
+3. **Dev Console**:
+   - SDK Runtime Controls: Open/Close, Get Last Report, Clear Reports, Reload
+   - SDK State Monitor: Component status, SDK state, report handler, event count
+   - Template Editor: JSON editor for `template` with validation
+   - Template ID: Text input for `templateid`
+   - Debug Toggle: Checkbox for `debug` attribute
+   - Patient Data Editor: JSON editor for `patientdata` with validation
+   - Report Display: Shows received reports
+
+The dev console does **NOT** include: Title editor (deprecated), Only Chat toggle (deprecated).
+
+## Source of Truth
+
+- **SDK documentation**: [https://omniloy.mintlify.app/en](https://omniloy.mintlify.app/en)
+
+## Security
+
+- Secret scanning and vulnerability scanning are configured via pre-commit hooks
+- Never commit real API keys or credentials — use placeholder values in example files
+
+## Testing Checklist
+
+For each example (`vanilla-ts`, `angular`, `angularjs`):
+
+1. `npm install` completes without errors
+2. Dev server starts (`npm run dev` / `npm start`)
+3. No deprecated props in source code
+4. `template` and `templateid` props are both set on `<sofia-sdk>`
+5. Environment example file has correct structure
+6. Dev console has: Template editor, Patient Data editor, templateid input, debug toggle
+7. Dev console does NOT have: Title editor, Only Chat toggle
+8. `handleReport`, `setIsOpen`, `setGetLastReport` callbacks are correctly wired
+9. No hardcoded API keys or credentials in source
+10. README instructions work end-to-end

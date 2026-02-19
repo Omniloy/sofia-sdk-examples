@@ -1,29 +1,4 @@
-import type { AppConfig, PatientData } from '../types';
-
-export const DEFAULT_CONFIG: AppConfig = {
-  patientId: 'YOUR_DEFAULT_PATIENT_ID',
-  userId: 'YOUR_DEFAULT_USER_ID',
-  baseUrl: 'YOUR_BASE_URL',
-  wssUrl: 'YOUR_WSS_URL',
-  apiKey: 'YOUR_API_KEY',
-  templateId: 'YOUR_TEMPLATE_ID',
-  language: 'es',
-  isOpen: true
-};
-
-export const DEFAULT_PATIENT_DATA: PatientData = {
-  extraData: {
-    clinical_notes: 'Patient has celiac disease and diabetes',
-    allergies: 'pollen',
-    medications: 'metformin, insulin'
-  },
-  fullName: 'John Doe',
-  birthDate: '01/15/1980',
-  phone: '+1 555-123-4567',
-  address: '123 Main St, Example City, USA'
-};
-
-export const TEMPLATE_CONFIG = {
+export const Template = {
   title: 'create_clinical_notes',
   description:
     "Generates clinical notes, possible diagnosis, treatments, reason for consultation, current illness, physical examination, comments and observations, treatment plan mentioned in the consultation transcript.",
