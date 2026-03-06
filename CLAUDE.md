@@ -15,6 +15,7 @@ Each example is independent (no monorepo workspaces). Always `cd` into the examp
 | `examples/vanilla-ts` | `npm install` | `npm run dev` | `npm run build` (tsc + vite) | 5173 |
 | `examples/angular` | `npm install` | `npm start` (ng serve) | `npm run build` | 4200 |
 | `examples/angularjs` | `npm install` | `npm run dev` (http-server) | N/A (static files) | 8000 |
+| `examples/react` | `npm install` | `npm run dev` (vite) | `npm run build` (tsc + vite) | 5174 |
 
 Angular also has `npm test` (Karma). The other examples have no test suites.
 
@@ -30,6 +31,7 @@ All examples integrate the same `<sofia-sdk>` web component with three different
 - **vanilla-ts**: ES6 class (`SofIA`) in `src/components/SofIA.ts` manages the component lifecycle. Config loaded via `fetch('/assets/environment.json')` at runtime. Vite bundles the SDK.
 - **angular**: Angular standalone component (`OmniscribeDemoComponent`) in `src/app/sofia.component.ts` with `[attr.*]` bindings. Config imported from `environment.ts`. Angular CLI bundles the SDK.
 - **angularjs**: AngularJS controller (`MainController`) in `src/app/controllers/MainController.js` with `$scope` bindings. Config loaded via `$http.get('assets/environment.json')`. SDK loaded from CDN via `<script>` tag (pinned to `@1.0.0`, no bundler). Has a retry mechanism for component initialization (3 attempts).
+- **react**: React 19 functional component (`App`) in `src/App.tsx` with `useRef` and `useEffect`. Config loaded via `fetch('/assets/environment.json')` at runtime. Vite bundles the SDK.
 
 ### Configuration Flow
 
@@ -41,6 +43,7 @@ Template definitions live in separate files:
 - `examples/vanilla-ts/src/utils/config.ts` — `TEMPLATE_CONFIG` constant
 - `examples/angular/src/app/template/Template.ts` — default export
 - `examples/angularjs/src/assets/template.js` — global `Template` object
+- `examples/react/src/utils/config.ts` — `TEMPLATE_CONFIG` constant
 
 ## SDK Property Naming
 
@@ -96,6 +99,7 @@ Each example has an environment **example** file with placeholder values (the ac
 | `vanilla-ts` | `public/assets/environment.example.json` | `public/assets/environment.json` |
 | `angular` | `environment.example.ts` | `environment.ts` |
 | `angularjs` | `src/assets/environment.example.json` | `src/assets/environment.json` |
+| `react` | `.env.example` | `.env` |
 
 For AngularJS, copy `src/assets/environment.example.json` to `src/assets/environment.json` and fill in your credentials.
 
@@ -127,7 +131,7 @@ The dev console does **NOT** include: Title editor (deprecated), Only Chat toggl
 
 ## Testing Checklist
 
-For each example (`vanilla-ts`, `angular`, `angularjs`):
+For each example (`vanilla-ts`, `angular`, `angularjs`, `react`):
 
 1. `npm install` completes without errors
 2. Dev server starts (`npm run dev` / `npm start`)
