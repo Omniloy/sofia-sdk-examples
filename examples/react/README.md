@@ -134,11 +134,13 @@ const handleSetGetLastReport = useCallback((fn: () => Promise<unknown>) => {
 ### Optional
 
 | Prop          | Type         | Description                                  |
-|---------------|--------------|----------------------------------------------|
-| `isopen`      | boolean      | Show/hide component                          |
-| `language`    | LanguageCode | Interface language (e.g., `LanguageCode.es`) |
-| `debug`       | boolean      | Enable debug logging                         |
-| `patientdata` | object       | Patient information (see below)              |
+|----------------------------|--------------|-------------------------------------------------------------------|
+| `isopen`                   | boolean      | Show/hide component                                               |
+| `language`                 | LanguageCode | Interface language (e.g., `LanguageCode.es`)                      |
+| `debug`                    | boolean      | Enable debug logging                                              |
+| `patientdata`              | object       | Patient information (see below)                                   |
+| `showconsentindicator`     | boolean      | Show the consent status indicator in the header (default: false)  |
+
 
 ### Callbacks
 

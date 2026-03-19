@@ -154,12 +154,13 @@ container.appendChild(component);
 
 ### Optional
 
-| Attribute     | Description                                      |
-|---------------|--------------------------------------------------|
-| `isopen`      | Show/hide component (`"true"` / `"false"`)       |
-| `language`    | Interface language (e.g., `"es"`, `"en"`)        |
-| `debug`       | Enable debug logging (`"true"`)                  |
-| `patientdata` | JSON string with patient information             |
+| Attribute              | Description                                                                                |
+|------------------------|--------------------------------------------------------------------------------------------|
+| `isopen`               | Show/hide component (`"true"` / `"false"`)                                                 |
+| `language`             | Interface language (e.g., `"es"`, `"en"`)                                                  |
+| `debug`                | Enable debug logging (`"true"`)                                                            |
+| `patientdata`          | JSON string with patient information                                                       |
+| `showconsentindicator` | Show the consent status indicator in the header (`"true"` / `"false"`, default: `"false"`) |
 
 ## Required Callbacks
 

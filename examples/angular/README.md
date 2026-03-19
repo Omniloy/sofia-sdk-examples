@@ -79,19 +79,20 @@ src/app/
 
 The `<sofia-sdk>` element accepts these attributes:
 
-| Attribute     | Description                          |
-|---------------|--------------------------------------|
-| `baseurl`     | API base URL                         |
-| `wssurl`      | WebSocket URL                        |
-| `apikey`      | API key                              |
-| `userid`      | User identifier                      |
-| `patientid`   | Patient identifier                   |
-| `templateid`  | Template identifier                  |
-| `template`    | JSON template schema                 |
-| `patientdata` | JSON patient context data            |
-| `language`    | Language code (e.g. `es`)            |
-| `isopen`      | Whether the SDK panel is open        |
-| `debug`       | Enable debug mode                    |
+| Attribute               | Description                                                     |
+|------------------------|------------------------------------------------------------------|
+| `baseurl`              | API base URL                                                     |
+| `wssurl`               | WebSocket URL                                                    |
+| `apikey`               | API key                                                          |
+| `userid`               | User identifier                                                  |
+| `patientid`            | Patient identifier                                               |
+| `templateid`           | Template identifier                                              |
+| `template`             | JSON template schema                                             |
+| `patientdata`          | JSON patient context data                                        |
+| `language`             | Language code (e.g. `es`)                                        |
+| `isopen`               | Whether the SDK panel is open                                    |
+| `debug`                | Enable debug mode                                                |
+| `showconsentindicator` | Show the consent status indicator in the header (default: false) |
 
 ### Example Binding
 
