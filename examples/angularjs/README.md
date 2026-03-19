@@ -60,19 +60,20 @@ All CDN scripts include Subresource Integrity (SRI) hashes to prevent supply cha
 
 The `<sofia-sdk>` element accepts the following attributes:
 
-| Attribute     | Description                                |
-|---------------|--------------------------------------------|
-| `patientid`   | Patient identifier                         |
-| `userid`      | User / practitioner identifier             |
-| `templateid`  | Template identifier for clinical notes     |
-| `apikey`      | API key for authentication                 |
-| `baseurl`     | Base URL of the SofIA API                  |
-| `wssurl`      | WebSocket URL for real-time communication  |
-| `isopen`      | Whether the widget starts open             |
-| `language`    | Interface language (e.g., `es`)            |
-| `template`    | JSON string with the template schema       |
-| `patientdata` | JSON string with patient context           |
-| `debug`       | Enable debug mode (console output)         |
+| Attribute               | Description                                                     |
+|------------------------|------------------------------------------------------------------|
+| `patientid`            | Patient identifier                                               |
+| `userid`               | User / practitioner identifier                                   |
+| `templateid`           | Template identifier for clinical notes                           |
+| `apikey`               | API key for authentication                                       |
+| `baseurl`              | Base URL of the SofIA API                                        |
+| `wssurl`               | WebSocket URL for real-time communication                        |
+| `isopen`               | Whether the widget starts open                                   |
+| `language`             | Interface language (e.g., `es`)                                  |
+| `template`             | JSON string with the template schema                             |
+| `patientdata`          | JSON string with patient context                                 |
+| `debug`                | Enable debug mode (console output)                               |
+| `showconsentindicator` | Show the consent status indicator in the header (default: false) |
 
 ## Minimal Integration
 
