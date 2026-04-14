@@ -92,7 +92,6 @@ The `<sofia-sdk>` element accepts these attributes:
 | `language`             | Language code (e.g. `es`)                                        |
 | `isopen`               | Whether the SDK panel is open                                    |
 | `debug`                | Enable debug mode                                                |
-| `showconsentindicator` | Show the consent status indicator in the header (default: false) |
 
 ### Example Binding
 

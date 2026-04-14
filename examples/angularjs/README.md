@@ -73,7 +73,6 @@ The `<sofia-sdk>` element accepts the following attributes:
 | `template`             | JSON string with the template schema                             |
 | `patientdata`          | JSON string with patient context                                 |
 | `debug`                | Enable debug mode (console output)                               |
-| `showconsentindicator` | Show the consent status indicator in the header (default: false) |
 
 ## Minimal Integration
 

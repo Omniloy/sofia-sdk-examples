@@ -174,7 +174,6 @@ function App() {
           setIsOpen={setIsOpen}
           handleReport={handleReport}
           setGetLastReport={handleSetGetLastReport}
-          showconsentindicator
           debug={debug ?? undefined}
           language={LanguageCode.es}
         />
