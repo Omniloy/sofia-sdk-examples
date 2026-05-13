@@ -12,7 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@omniloy/sofia-sdk": "1.0.4",
+    "@omniloy/sofia-sdk": "1.0.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
