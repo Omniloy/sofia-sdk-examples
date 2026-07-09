@@ -37,7 +37,8 @@ export class SofIA {
   }
 
   private validateConfig() {
-    const placeholders = ['YOUR_BASE_URL', 'YOUR_API_KEY', 'YOUR_DEFAULT_USER_ID', 'YOUR_DEFAULT_PATIENT_ID', 'YOUR_TEMPLATE_ID'];
+    // baseUrl is optional (auto-resolved for many keys), so it is not validated here.
+    const placeholders = ['YOUR_API_KEY', 'YOUR_DEFAULT_USER_ID', 'YOUR_DEFAULT_PATIENT_ID', 'YOUR_TEMPLATE_ID'];
     const invalid = Object.entries(this.config).filter(
       ([, value]) => typeof value === 'string' && placeholders.includes(value)
     );
@@ -80,7 +81,7 @@ export class SofIA {
         if (envData.sdk) {
           this.config = {
             ...this.config,
-            baseUrl: envData.sdk.baseUrl || this.config.baseUrl,
+            baseUrl: envData.sdk.baseUrl ?? this.config.baseUrl,
             apiKey: envData.sdk.apiKey || this.config.apiKey,
             patientId: envData.sdk.patientId || envData.sdk.defaultPatientId || this.config.patientId,
             userId: envData.sdk.userId || envData.sdk.defaultUserId || this.config.userId,

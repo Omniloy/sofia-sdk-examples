@@ -66,6 +66,7 @@ function MyComponent() {
       isopen={isOpen}
       setIsOpen={setIsOpen}
       handleReport={(report) => console.log('Report:', report)}
+      setGetLastReport={(fn) => { /* store fn; call it later to retrieve the last report */ }}
       onReportApply={(curated) => console.log('Curated report:', curated)}
       updateTemplate={() => ({ reason_for_consultation: 'From my EMR form' })}
       language={LanguageCode.es}
@@ -89,7 +90,7 @@ import '@omniloy/sofia-sdk/react/index.css';
 
 ```tsx
 <Omniscribe
-  baseurl={config.baseUrl || undefined}
+  baseurl={config.baseUrl}
   apikey={config.apiKey}
   userid={userId}
   patientid={patientId}
