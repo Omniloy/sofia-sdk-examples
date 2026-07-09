@@ -37,7 +37,7 @@ export class SofIA {
   }
 
   private validateConfig() {
-    const placeholders = ['YOUR_BASE_URL', 'YOUR_WSS_URL', 'YOUR_API_KEY', 'YOUR_DEFAULT_USER_ID', 'YOUR_DEFAULT_PATIENT_ID', 'YOUR_TEMPLATE_ID'];
+    const placeholders = ['YOUR_BASE_URL', 'YOUR_API_KEY', 'YOUR_DEFAULT_USER_ID', 'YOUR_DEFAULT_PATIENT_ID', 'YOUR_TEMPLATE_ID'];
     const invalid = Object.entries(this.config).filter(
       ([, value]) => typeof value === 'string' && placeholders.includes(value)
     );
@@ -81,7 +81,6 @@ export class SofIA {
           this.config = {
             ...this.config,
             baseUrl: envData.sdk.baseUrl || this.config.baseUrl,
-            wssUrl: envData.sdk.wssUrl || this.config.wssUrl,
             apiKey: envData.sdk.apiKey || this.config.apiKey,
             patientId: envData.sdk.patientId || envData.sdk.defaultPatientId || this.config.patientId,
             userId: envData.sdk.userId || envData.sdk.defaultUserId || this.config.userId,
@@ -151,13 +150,16 @@ export class SofIA {
     const component = document.createElement('sofia-sdk');
 
     // 1. Set required attributes
-    component.setAttribute('baseurl', this.config.baseUrl);
-    component.setAttribute('wssurl', this.config.wssUrl);
     component.setAttribute('apikey', this.config.apiKey);
     component.setAttribute('userid', this.config.userId);
     component.setAttribute('patientid', this.config.patientId);
     component.setAttribute('templateid', this.config.templateId);
     component.setAttribute('template', JSON.stringify(this.template));
+
+    // baseurl is optional; set it only when configured (Omniloy tells you if your key needs it).
+    if (this.config.baseUrl) {
+      component.setAttribute('baseurl', this.config.baseUrl);
+    }
 
     // 2. Set optional attributes
     component.setAttribute('isopen', this.isOpen.toString());
@@ -186,7 +188,27 @@ export class SofIA {
       this.updateUI();
     };
 
-    // 4. Mount the component
+    // 4. Set new-feature callbacks (SDK 1.0.8+)
+    // Insertion preview modal: receives the curated report when the doctor clicks Apply.
+    // Requires the backend `showInsertionPreview` flag for your API key; falls back to handleReport otherwise.
+    component.onReportApply = (curated: unknown) => {
+      this.lastReportData = curated;
+      this.reports.push(curated);
+      this.updateUI();
+      this.showReportData();
+    };
+
+    // EMR pre-fill: return what the doctor already wrote in your form, keyed by template property id.
+    // The SDK merges it into generation so regeneration produces a revised note, not an identical copy.
+    component.updateTemplate = () => ({
+      reason_for_consultation: 'Follow-up for hypertension',
+      treatment_plan: 'Continue current medication; recheck blood pressure in 2 weeks',
+    });
+
+    // Optional: class-name overrides for the insertion preview modal (rendered in the SDK shadow DOM).
+    component.insertionPreviewClassNames = { panel: 'sofia-preview-panel' };
+
+    // 5. Mount the component
     container.appendChild(component);
 
     // ===== SDK INTEGRATION END =====

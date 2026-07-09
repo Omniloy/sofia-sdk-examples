@@ -30,7 +30,7 @@ All examples integrate the same `<sofia-sdk>` web component with three different
 
 - **vanilla-ts**: ES6 class (`SofIA`) in `src/components/SofIA.ts` manages the component lifecycle. Config loaded via `fetch('/assets/environment.json')` at runtime. Vite bundles the SDK.
 - **angular**: Angular standalone component (`OmniscribeDemoComponent`) in `src/app/sofia.component.ts` with `[attr.*]` bindings. Config imported from `environment.ts`. Angular CLI bundles the SDK.
-- **angularjs**: AngularJS controller (`MainController`) in `src/app/controllers/MainController.js` with `$scope` bindings. Config loaded via `$http.get('assets/environment.json')`. SDK loaded from CDN via `<script>` tag (pinned to `@1.0.0`, no bundler). Has a retry mechanism for component initialization (3 attempts).
+- **angularjs**: AngularJS controller (`MainController`) in `src/app/controllers/MainController.js` with `$scope` bindings. Config loaded via `$http.get('assets/environment.json')`. SDK loaded from CDN via `<script>` tag (pinned to `@1.0.8`, no bundler). Has a retry mechanism for component initialization (3 attempts).
 - **react**: React 19 functional component (`App`) in `src/App.tsx` with `useRef` and `useEffect`. Config loaded via `fetch('/assets/environment.json')` at runtime. Vite bundles the SDK.
 
 ### Configuration Flow
@@ -48,16 +48,20 @@ Template definitions live in separate files:
 ## SDK Property Naming
 
 HTML attributes are **lowercase** (web component standard):
-- `baseurl`, `wssurl`, `apikey`, `userid`, `patientid`
+- `apikey`, `userid`, `patientid`
+- `baseurl` (optional for some newer keys — the endpoint is resolved automatically since 1.0.8; required otherwise. Omniloy provides the credentials and tells you which)
 - `template`, `templateid`, `patientdata`
 - `isopen`, `language`, `debug`
 
-## Deprecated Properties (as of v0.0.10)
+Function/JSON props are assigned as **JS properties** on the element (not HTML attributes): `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate`, `insertionPreviewClassNames`.
+
+## Deprecated Properties
 
 Do NOT use these in examples:
 
 | Deprecated | Replacement |
 |---|---|
+| `wssurl` | Removed — deprecated & ignored since 1.0.7; the transcription WebSocket URL is delivered by the settings API |
 | `toolsargs` / `toolsArgs` | `template` |
 | `sofiatitle` / `sofiaTitle` | Remove (title is always "SofIA") |
 | `isonlychat` / `onlyChat` | Auto-detected (omit `template`/`templateid` for chat-only) |
@@ -73,22 +77,28 @@ Do NOT use these in examples:
 
 The generate button only appears when **both** `template` AND `templateid` are provided. Without them, SofIA operates in chat-only mode automatically.
 
-## SDK Callbacks & Events
+## SDK Callbacks
 
-Three required callbacks on the `<sofia-sdk>` element:
+Assign as **JS properties** on the `<sofia-sdk>` element (or as props on the React `<Omniscribe>` component):
 
 ```javascript
-component.handleReport = (report) => { /* receives generated report */ };
+component.handleReport = (report) => { /* receives generated report (fallback delivery) */ };
 component.setIsOpen = (valueOrFn) => { /* controls widget visibility */ };
 component.setGetLastReport = (fn) => { /* exposes async function to retrieve last report */ };
+
+// New in SDK 1.0.8
+component.onReportApply = (curated) => { /* curated report from the insertion preview modal */ };
+component.updateTemplate = () => ({ /* existing EMR content keyed by template property id */ });
+component.insertionPreviewClassNames = { panel: '...' }; // optional modal styling
 ```
 
-Custom DOM events: `handle-report`, `set-is-open`, `set-get-last-report`
+> **The SDK does NOT emit `handle-report` / `set-is-open` / `set-get-last-report` DOM events.** Use the callback **properties** above. The only real DOM event is `sofia:transcriber-url-changed`.
 
 ## Template Field Properties
 
 - `isConfigurable` (default: `true`) — controls whether the healthcare professional can edit the generated field
-- `source` — enables normalization with standard medical terminologies. Supported: `"ICD10"`, `"cie_latam"`
+- `source` — links a field to a **custom master** (a controlled terminology / code catalog) that Omniloy provisions per account. There are no built-in `source` values; contact Omniloy to have a custom master created and receive its `source`. You can also request a terminology (e.g. ICD-10) directly in the field `description`.
+- `mandatory` (custom keyword) — stronger than `required`: the doctor must review/fill it before Apply in the insertion preview modal
 
 ## Environment Configuration
 
@@ -105,7 +115,7 @@ For AngularJS, copy `src/assets/environment.example.json` to `src/assets/environ
 
 ## UI Consistency
 
-All three examples must share the same visual design and dev console layout:
+All four examples must share the same visual design and dev console layout:
 
 1. **Header**: Omniloy logo + "SofIA SDK - [Framework Name]" + link to docs
 2. **Main Area**: `<sofia-sdk>` component
@@ -135,11 +145,11 @@ For each example (`vanilla-ts`, `angular`, `angularjs`, `react`):
 
 1. `npm install` completes without errors
 2. Dev server starts (`npm run dev` / `npm start`)
-3. No deprecated props in source code
+3. No deprecated props in source code (no `wssurl`, no `toolsargs`)
 4. `template` and `templateid` props are both set on `<sofia-sdk>`
 5. Environment example file has correct structure
 6. Dev console has: Template editor, Patient Data editor, templateid input, debug toggle
 7. Dev console does NOT have: Title editor, Only Chat toggle
-8. `handleReport`, `setIsOpen`, `setGetLastReport` callbacks are correctly wired
+8. `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate` callbacks are correctly wired
 9. No hardcoded API keys or credentials in source
 10. README instructions work end-to-end

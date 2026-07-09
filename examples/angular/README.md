@@ -24,9 +24,9 @@ Then edit `environment.ts`:
 export const environment = {
   production: false,
   sdk: {
-    baseUrl: 'YOUR_BASE_URL',
-    wssUrl: 'YOUR_WSS_URL',
     apiKey: 'YOUR_API_KEY',
+    // Optional — Omniloy tells you if your key needs it, e.g. https://api.example.com/v1
+    baseUrl: '',
     userId: 'YOUR_DEFAULT_USER_ID',
     patientId: 'YOUR_DEFAULT_PATIENT_ID',
     templateId: 'YOUR_TEMPLATE_ID',
@@ -36,7 +36,7 @@ export const environment = {
 };
 ```
 
-Replace the placeholder values with actual credentials provided by Omniloy.
+Replace the placeholder values with actual credentials provided by Omniloy. `wssurl` is no longer used (deprecated and ignored since SDK 1.0.7 — the transcription URL is delivered by the settings API).
 
 ### 2. Install & Run
 
@@ -56,7 +56,7 @@ This example uses the SofIA SDK from npm:
 ```json
 {
   "dependencies": {
-    "@omniloy/sofia-sdk": "1.0.0"
+    "@omniloy/sofia-sdk": "^1.0.8"
   }
 }
 ```
@@ -81,9 +81,8 @@ The `<sofia-sdk>` element accepts these attributes:
 
 | Attribute               | Description                                                     |
 |------------------------|------------------------------------------------------------------|
-| `baseurl`              | API base URL                                                     |
-| `wssurl`               | WebSocket URL                                                    |
-| `apikey`               | API key                                                          |
+| `apikey`               | API key (provided by Omniloy) |
+| `baseurl`              | API base URL — **optional** for some keys; Omniloy tells you if yours needs it |
 | `userid`               | User identifier                                                  |
 | `patientid`            | Patient identifier                                               |
 | `templateid`           | Template identifier                                              |
@@ -98,9 +97,8 @@ The `<sofia-sdk>` element accepts these attributes:
 ```html
 <sofia-sdk
   id="sofia"
-  [attr.baseurl]="environment.sdk.baseUrl"
+  [attr.baseurl]="environment.sdk.baseUrl || null"
   [attr.language]="environment.sdk.language || 'es'"
-  [attr.wssurl]="environment.sdk.wssUrl"
   [attr.apikey]="environment.sdk.apiKey"
   [attr.userid]="environment.sdk.userId"
   [attr.patientid]="environment.sdk.patientId"
@@ -122,8 +120,7 @@ Copy-paste this to integrate the Sofia SDK into any Angular project. See the cod
 <!-- In your component template -->
 <sofia-sdk
   id="sofia"
-  [attr.baseurl]="environment.sdk.baseUrl"
-  [attr.wssurl]="environment.sdk.wssUrl"
+  [attr.baseurl]="environment.sdk.baseUrl || null"
   [attr.apikey]="environment.sdk.apiKey"
   [attr.userid]="environment.sdk.userId"
   [attr.patientid]="environment.sdk.patientId"
@@ -182,7 +179,31 @@ component.setGetLastReport = (fn) => {
 };
 ```
 
-The component also emits DOM events: `handle-report`, `set-is-open`, `set-get-last-report`.
+Callbacks are assigned as **element properties** (shown above), not DOM event bindings — the SDK does not emit `handle-report`/`set-is-open` events, so Angular bindings like `(handle-report)` would never fire.
+
+### New in v1.0.8
+
+Three optional properties power the newest features (also assigned as element properties):
+
+```typescript
+// Curated report from the insertion preview modal (opt-in per API key on the backend).
+// Falls back to handleReport when the modal is disabled.
+component.onReportApply = (curated) => {
+  // curated: only the fields the doctor kept/edited
+};
+
+// Feed the doctor's existing EMR field content into generation so regeneration
+// integrates it (keys must match the template property ids).
+component.updateTemplate = () => ({
+  reason_for_consultation: form.reason,
+  treatment_plan: form.plan,
+});
+
+// Optional: class-name overrides to style the insertion preview modal.
+component.insertionPreviewClassNames = { panel: 'sofia-preview-panel' };
+```
+
+See the [insertion preview](https://omniloy.mintlify.app/en/sofia/en/sdk/insertion-preview) and [updateTemplate](https://omniloy.mintlify.app/en/sofia/en/sdk/update-template) guides for the full flow.
 
 ## Development Features
 
@@ -192,6 +213,7 @@ The component also emits DOM events: `handle-report`, `set-is-open`, `set-get-la
 - **Patient Data Editor** - Live patient data editing with validation
 - **Debug Toggle** - Enable/disable debug mode on the SDK component
 - **Template ID Input** - Dynamically change the template ID
+- **Curated Report Display** - Shows the payload from `onReportApply` (insertion preview modal, v1.0.8)
 
 ## Documentation
 

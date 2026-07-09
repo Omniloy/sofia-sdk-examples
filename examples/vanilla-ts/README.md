@@ -30,8 +30,6 @@ cp public/assets/environment.example.json public/assets/environment.json
 {
   "production": false,
   "sdk": {
-    "baseUrl": "YOUR_BASE_URL",
-    "wssUrl": "YOUR_WSS_URL",
     "apiKey": "YOUR_API_KEY",
     "userId": "YOUR_DEFAULT_USER_ID",
     "patientId": "YOUR_DEFAULT_PATIENT_ID",
@@ -44,6 +42,8 @@ cp public/assets/environment.example.json public/assets/environment.json
 ```
 
 > **Important**: Replace placeholder values with actual credentials provided by Omniloy.
+>
+> **`baseUrl` is optional (SDK 1.0.8+).** For some newer keys the endpoint is resolved automatically, so you can leave `baseUrl` empty; other keys require it. Omniloy provides your credentials and tells you which. The `wssUrl` field was **removed** — the transcription WebSocket URL is now provided by the API (the `wssurl` prop is deprecated and ignored since 1.0.7).
 
 ### Installation & Run
 
@@ -67,15 +67,15 @@ await customElements.whenDefined('sofia-sdk');
 // 1. Create and configure the component
 const component = document.createElement('sofia-sdk');
 
-component.setAttribute('baseurl', 'https://api.example.com/v1');
-component.setAttribute('wssurl', 'wss://ws.example.com');
-component.setAttribute('apikey', 'sk-xxxxxxxxxxxx');
+component.setAttribute('apikey', 'YOUR_API_KEY');
 component.setAttribute('userid', 'user-123');
 component.setAttribute('patientid', 'patient-456');
 component.setAttribute('templateid', 'tpl-789');
 component.setAttribute('template', JSON.stringify(myTemplate));
 component.setAttribute('isopen', 'true');
 component.setAttribute('language', 'es');
+// baseurl is optional — set it only if Omniloy tells you your key needs it:
+// component.setAttribute('baseurl', 'https://api.example.com/v1');
 
 // 2. Set required callbacks
 component.handleReport = (report) => {
@@ -92,7 +92,18 @@ component.setGetLastReport = (fn) => {
   getLastReport = fn; // store for later: await getLastReport()
 };
 
-// 3. Mount the component
+// 3. (SDK 1.0.8+) Insertion preview + EMR pre-fill callbacks
+component.onReportApply = (curated) => {
+  // Curated report from the insertion preview modal (falls back to handleReport when disabled)
+  console.log('Curated report:', curated);
+};
+
+component.updateTemplate = () => ({
+  // Existing EMR content keyed by template property id — merged into generation
+  reason_for_consultation: 'Follow-up for hypertension',
+});
+
+// 4. Mount the component
 document.getElementById('container').appendChild(component);
 ```
 
@@ -108,8 +119,6 @@ import '@omniloy/sofia-sdk';
 
 ```typescript
 const component = document.createElement('sofia-sdk');
-component.setAttribute('baseurl', config.baseUrl);
-component.setAttribute('wssurl', config.wssUrl);
 component.setAttribute('apikey', config.apiKey);
 component.setAttribute('userid', config.userId);
 component.setAttribute('patientid', config.patientId);
@@ -118,6 +127,8 @@ component.setAttribute('template', JSON.stringify(template));
 component.setAttribute('patientdata', JSON.stringify(patientData));
 component.setAttribute('isopen', 'true');
 component.setAttribute('language', config.language || 'es');
+// baseurl is optional — set it only if Omniloy tells you your key needs it:
+if (config.baseUrl) component.setAttribute('baseurl', config.baseUrl);
 ```
 
 3. **Set up required callbacks**:
@@ -144,9 +155,7 @@ container.appendChild(component);
 
 | Attribute    | Description                                                          |
 |--------------|----------------------------------------------------------------------|
-| `baseurl`    | SofIA API endpoint                                                   |
-| `wssurl`     | WebSocket URL for real-time features                                 |
-| `apikey`     | Authentication key                                                   |
+| `apikey`     | Authentication key (provided by Omniloy) |
 | `userid`     | Application user identifier                                         |
 | `patientid`  | Patient context                                                      |
 | `template`   | JSON Schema template for report generation                           |
@@ -156,18 +165,31 @@ container.appendChild(component);
 
 | Attribute              | Description                                                                                |
 |------------------------|--------------------------------------------------------------------------------------------|
+| `baseurl`              | SofIA API endpoint. Optional (1.0.8+) for some keys; Omniloy tells you if yours needs it |
 | `isopen`               | Show/hide component (`"true"` / `"false"`)                                                 |
 | `language`             | Interface language (e.g., `"es"`, `"en"`)                                                  |
 | `debug`                | Enable debug logging (`"true"`)                                                            |
 | `patientdata`          | JSON string with patient information                                                       |
 
-## Required Callbacks
+> `wssurl` is **deprecated and ignored** since 1.0.7 — the transcription WebSocket URL is provided by the API. Do not set it.
+
+## Callbacks
+
+Required:
 
 | Callback            | Signature                                                  | Description                          |
 |---------------------|------------------------------------------------------------|--------------------------------------|
 | `handleReport`      | `(report: unknown) => void`                                | Receives generated reports           |
 | `setIsOpen`         | `(value: boolean \| (prev: boolean) => boolean) => void`   | Controls widget visibility           |
 | `setGetLastReport`  | `(fn: () => Promise<unknown>) => void`                     | Exposes async function for last report |
+
+New in SDK 1.0.8 (assigned as JS properties, same as above):
+
+| Property            | Signature                                                  | Description                          |
+|---------------------|------------------------------------------------------------|--------------------------------------|
+| `onReportApply`     | `(curated: unknown) => void`                               | Receives the curated report from the [insertion preview modal](https://omniloy.mintlify.app/en). Falls back to `handleReport` when the modal is disabled |
+| `updateTemplate`    | `() => Record<string, unknown> \| null \| undefined \| Promise<…>` | Returns existing EMR content keyed by template property id so regeneration integrates it. See [Pre-fill from your EMR](https://omniloy.mintlify.app/en) |
+| `insertionPreviewClassNames` | `Record<string, string>`                          | Optional class-name overrides for the insertion preview modal (shadow DOM) |
 
 ## Development Features
 

@@ -282,7 +282,7 @@ angular.module('myApp').controller('MainController', [
      * @returns {boolean} true if configuration is valid
      */
     $scope.validateConfig = function(config) {
-      var placeholders = ['YOUR_BASE_URL', 'YOUR_WSS_URL', 'YOUR_API_KEY', 'YOUR_DEFAULT_USER_ID', 'YOUR_DEFAULT_PATIENT_ID', 'YOUR_TEMPLATE_ID'];
+      var placeholders = ['YOUR_BASE_URL', 'YOUR_API_KEY', 'YOUR_DEFAULT_USER_ID', 'YOUR_DEFAULT_PATIENT_ID', 'YOUR_TEMPLATE_ID'];
       var invalid = [];
 
       Object.keys(config).forEach(function(key) {
@@ -312,7 +312,6 @@ angular.module('myApp').controller('MainController', [
       $scope.templateId = config.templateId;
       $scope.userId = config.userId;
       $scope.baseUrl = config.baseUrl;
-      $scope.wssUrl = config.wssUrl;
       $scope.apiKey = config.apiKey;
       $scope.isOpen = config.isOpen;
       $scope.language = config.language || 'es';
@@ -371,8 +370,10 @@ angular.module('myApp').controller('MainController', [
       // Everything between START and END is the core integration pattern.
 
       // 1. Set required attributes
-      component.setAttribute('baseurl', $scope.baseUrl);
-      component.setAttribute('wssurl', $scope.wssUrl);
+      // baseurl is optional; Omniloy tells you if your key needs it.
+      if ($scope.baseUrl) {
+        component.setAttribute('baseurl', $scope.baseUrl);
+      }
       component.setAttribute('apikey', $scope.apiKey);
       component.setAttribute('userid', $scope.userId);
       component.setAttribute('patientid', $scope.patientId);
@@ -413,6 +414,30 @@ angular.module('myApp').controller('MainController', [
       component.setGetLastReport = function(fn) {
         $scope.setGetLastReport(fn);
       };
+
+      // 4. Optional: insertion preview modal + EMR pre-fill (SDK 1.0.8)
+      // onReportApply receives the report the doctor curated in the insertion
+      // preview modal. The modal only renders when it is enabled for your API
+      // key on the backend; otherwise reports arrive via handleReport (above).
+      component.onReportApply = function(curated) {
+        $scope.$evalAsync(function() {
+          $scope.lastReport = curated;
+          $scope.reports.push(curated);
+        });
+      };
+
+      // updateTemplate lets the EMR feed already-typed field content into
+      // generation so regeneration integrates it instead of overwriting it.
+      // Return an object keyed by template property ids (see assets/template.js).
+      component.updateTemplate = function() {
+        return {
+          reason_for_consultation: $scope.existingReasonForConsultation || '',
+          treatment_plan: $scope.existingTreatmentPlan || ''
+        };
+      };
+
+      // Optional: class-name overrides to style the insertion preview modal.
+      component.insertionPreviewClassNames = { panel: 'sofia-preview-panel' };
 
       // ===== SDK INTEGRATION END =====
 

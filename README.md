@@ -1,8 +1,8 @@
 # Sofia SDK Examples
 
-![Examples](https://img.shields.io/badge/Examples-3-orange)
+![Examples](https://img.shields.io/badge/Examples-4-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![SDK Version](https://img.shields.io/badge/SDK-v1.0.0-blue)
+![SDK Version](https://img.shields.io/badge/SDK-v1.0.8-blue)
 
 Quick examples showing how to integrate **Sofia SDK** (`@omniloy/sofia-sdk`) into different web frameworks. Pick your framework and get started in minutes!
 
@@ -10,6 +10,7 @@ Quick examples showing how to integrate **Sofia SDK** (`@omniloy/sofia-sdk`) int
 
 | Framework | Description | Directory |
 |-----------|-------------|-----------|
+| **React** | React 19 + TypeScript with Vite (uses the `<Omniscribe>` component) | [`/examples/react`](./examples/react/) |
 | **Vanilla TypeScript** | Plain TypeScript with Vite | [`/examples/vanilla-ts`](./examples/vanilla-ts/) |
 | **Angular** | Angular 19+ integration | [`/examples/angular`](./examples/angular/) |
 | **AngularJS** | Legacy AngularJS support | [`/examples/angularjs`](./examples/angularjs/) |
@@ -30,11 +31,14 @@ Quick examples showing how to integrate **Sofia SDK** (`@omniloy/sofia-sdk`) int
 
 2. **Choose your example:**
    ```bash
-   cd examples/vanilla-ts    # or examples/angular, examples/angularjs
+   cd examples/react    # or examples/vanilla-ts, examples/angular, examples/angularjs
    ```
 
 3. **Configure credentials** (see [Getting Credentials](#getting-credentials) below):
    ```bash
+   # React — copy the example env file
+   cp .env.example .env
+
    # Vanilla TS / AngularJS — copy the example env file
    cp public/assets/environment.example.json public/assets/environment.json
 
@@ -61,12 +65,13 @@ Before running any example, you need API credentials from Omniloy:
 2. **You will receive:**
    | Credential | Description | Example format |
    |---|---|---|
-   | `baseUrl` | Sofia API endpoint | `https://api.example.com/v1` |
-   | `wssUrl` | WebSocket URL for real-time features | `wss://ws.example.com` |
-   | `apiKey` | Authentication key | `sk-xxxxxxxxxxxx` |
+   | `apiKey` | Authentication key | `YOUR_API_KEY` |
    | `userId` | Your user identifier | `user-123` |
    | `patientId` | Patient context for testing | `patient-456` |
    | `templateId` | Template identifier | `tpl-789` |
+   | `baseUrl` | Sofia API endpoint (**optional** for some keys — Omniloy tells you) | `https://api.example.com/v1` |
+
+> **API key & baseUrl**: Omniloy provides your credentials. `baseUrl` is optional for some newer keys (the endpoint is resolved automatically) and required otherwise — Omniloy tells you which. The `wssUrl` credential is no longer used — the transcription WebSocket URL is provided automatically by the settings API (the `wssurl` prop is deprecated and ignored since SDK 1.0.7).
 
 > **Note**: If credentials are left as placeholder values (`YOUR_API_KEY`, etc.), the examples will show a configuration error at startup.
 
@@ -76,6 +81,7 @@ Each example has an `.example` file you copy and fill in:
 
 | Example | Copy from | To (gitignored) |
 |---|---|---|
+| React | `.env.example` | `.env` |
 | Vanilla TS | `public/assets/environment.example.json` | `public/assets/environment.json` |
 | Angular | `environment.example.ts` | `environment.ts` |
 | AngularJS | `src/assets/environment.example.json` | `src/assets/environment.json` |
@@ -85,13 +91,12 @@ Each example has an `.example` file you copy and fill in:
 ```typescript
 {
   // Credentials from Omniloy
-  baseUrl: 'https://api.example.com/v1', // Sofia API endpoint
-  wssUrl: 'wss://ws.example.com',        // WebSocket URL
-  apiKey: 'sk-xxxxxxxxxxxx',             // Authentication key
+  apiKey: 'YOUR_API_KEY',        // Authentication key (provided by Omniloy)
+  baseUrl: 'https://api.example.com/v1', // Sofia API endpoint — optional for some keys (Omniloy tells you)
 
   // Your application data
-  userId: 'user-123',                    // User identifier
-  patientId: 'patient-456',             // Patient context
+  userId: 'user-123',                    // User identifier (internal surrogate id, never PII)
+  patientId: 'patient-456',             // Patient context (internal surrogate id, never PII)
 
   // Template configuration (both required for report generation)
   template: {},                          // JSON Schema template
@@ -104,12 +109,14 @@ Each example has an `.example` file you copy and fill in:
 }
 ```
 
+> `wssUrl` is no longer part of the configuration — the transcription WebSocket URL is delivered by the settings API (the `wssurl` prop is deprecated and ignored since SDK 1.0.7).
+
 ### Available Callbacks
 
-Three callbacks must be set on the `<sofia-sdk>` element:
+Set these as **JS properties** on the `<sofia-sdk>` element (or as props on the React `<Omniscribe>` component):
 
 ```javascript
-// Handle generated reports
+// Handle generated reports (fallback delivery when the insertion preview modal is off)
 component.handleReport = (report) => {
   console.log('Report received:', report);
 };
@@ -123,7 +130,24 @@ component.setIsOpen = (isOpen) => {
 component.setGetLastReport = (fn) => {
   // Store fn to call later: fn() returns the last report
 };
+
+// NEW (SDK 1.0.8) — receive the curated report from the insertion preview modal.
+// The modal is opt-in per API key (enabled by Omniloy on the backend); until then, reports arrive via handleReport.
+component.onReportApply = (curated) => {
+  console.log('Curated report applied:', curated);
+};
+
+// NEW (SDK 1.0.8) — feed the doctor's existing EMR field content into generation so
+// regeneration produces a revised note instead of an identical copy. Keys must match template property ids.
+component.updateTemplate = () => ({
+  chief_complaint: 'Chest pain for 2 days',
+});
+
+// NEW (SDK 1.0.8, optional) — class-name overrides to style the insertion preview modal.
+component.insertionPreviewClassNames = { panel: 'my-preview-panel' };
 ```
+
+See the [Insertion preview](https://omniloy.mintlify.app/sofia/en/sdk/insertion-preview) and [updateTemplate](https://omniloy.mintlify.app/sofia/en/sdk/update-template) guides for the full flow.
 
 ## Installation Options
 
@@ -144,9 +168,10 @@ npm install @omniloy/sofia-sdk
 | `Configuration Error` at startup | Placeholder credentials not replaced | Copy the `.example` env file and fill in real credentials (see [Getting Credentials](#getting-credentials)) |
 | Component not loading | SDK not installed or not imported | Run `npm install` and ensure your entry point imports `@omniloy/sofia-sdk` |
 | No generate button | Missing `template` or `templateid` | Both `template` AND `templateid` must be set for report generation |
-| Callbacks not firing | Assigned before element exists | Assign `handleReport`, `setIsOpen`, `setGetLastReport` after the element is in the DOM |
+| Callbacks not firing | Assigned before element exists | Assign `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate` after the element is in the DOM |
 | Boolean attributes ignored | Using boolean instead of string | Use strings: `setAttribute('isopen', 'true')`, not booleans |
-| WebSocket errors | Invalid `wssUrl` | Verify `wssUrl` starts with `wss://` and matches the value provided by Omniloy |
+| Insertion preview modal never appears | Backend flag off, or no `template` | The modal is opt-in per API key — ask Omniloy to enable it. It also requires a `template`. Until enabled, reports arrive via `handleReport` |
+| Transcription doesn't start | Settings not resolved yet | The transcription URL is provided by the settings API (not `wssUrl` anymore); recording stays disabled until it resolves. Verify your `apiKey` is valid |
 
 For framework-specific troubleshooting, see each example's README.
 

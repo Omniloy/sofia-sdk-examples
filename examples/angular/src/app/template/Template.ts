@@ -129,8 +129,8 @@ export const Template = {
             properties: {
               name: {
                 type: 'string',
-                description: 'Name of the disease.',
-                source: 'ICD10',
+                description: 'Name of the disease using the ICD-10',
+                // clinical coding: point 'source' at a custom master provisioned by Omniloy; ICD-10 can also be requested in the description below
               },
               observations: {
                 type: 'string',
@@ -173,8 +173,7 @@ export const Template = {
               },
               name: {
                 type: 'string',
-                description: 'Name of the disease.',
-                source: 'ICD10',
+                description: 'Name of the disease using the ICD-10',
               },
             },
           },
@@ -193,8 +192,7 @@ export const Template = {
           },
           name: {
             type: 'string',
-            description: 'Name of the disease.',
-            source: 'ICD10',
+            description: 'Name of the disease using the ICD-10',
           },
           description: {
             type: 'string',
