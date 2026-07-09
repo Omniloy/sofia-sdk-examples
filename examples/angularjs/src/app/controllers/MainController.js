@@ -282,7 +282,8 @@ angular.module('myApp').controller('MainController', [
      * @returns {boolean} true if configuration is valid
      */
     $scope.validateConfig = function(config) {
-      var placeholders = ['YOUR_BASE_URL', 'YOUR_API_KEY', 'YOUR_DEFAULT_USER_ID', 'YOUR_DEFAULT_PATIENT_ID', 'YOUR_TEMPLATE_ID'];
+      // baseUrl is optional (auto-resolved for many keys), so it is not validated here.
+      var placeholders = ['YOUR_API_KEY', 'YOUR_DEFAULT_USER_ID', 'YOUR_DEFAULT_PATIENT_ID', 'YOUR_TEMPLATE_ID'];
       var invalid = [];
 
       Object.keys(config).forEach(function(key) {
