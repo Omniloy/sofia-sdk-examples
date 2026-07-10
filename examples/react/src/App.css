@@ -595,3 +595,13 @@
     justify-content: flex-start;
   }
 }
+
+/*
+ * insertionPreviewClassNames demo class.
+ * NOTE: the insertion preview modal renders inside the SofIA SDK shadow DOM, so
+ * host page CSS cannot reach these classes directly — this is illustrative of how
+ * you pass class names via the `insertionPreviewClassNames` prop.
+ */
+.sofia-preview-panel {
+  border-radius: 12px;
+}

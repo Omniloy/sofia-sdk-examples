@@ -4,8 +4,8 @@ import { LanguageCode, Omniscribe } from '@omniloy/sofia-sdk/react';
 import '@omniloy/sofia-sdk/react/index.css';
 
 const config = {
+  // baseUrl is optional — Omniloy tells you whether your key needs it.
   baseUrl: import.meta.env.VITE_BASE_URL,
-  wssUrl: import.meta.env.VITE_WSS_URL,
   apiKey: import.meta.env.VITE_API_KEY,
 };
 
@@ -14,6 +14,7 @@ function App() {
   const [isOpen, setIsOpen] = useState(import.meta.env.VITE_IS_OPEN !== 'false');
   const [reports, setReports] = useState<unknown[]>([]);
   const [lastReportData, setLastReportData] = useState<unknown>(null);
+  const [curatedReportData, setCuratedReportData] = useState<unknown>(null);
   const [retrievedReportData, setRetrievedReportData] = useState<unknown>(null);
   const [getLastReportFn, setGetLastReportFn] = useState<(() => Promise<unknown>) | null>(null);
 
@@ -52,6 +53,25 @@ function App() {
   const handleSetGetLastReport = useCallback((fn: () => Promise<unknown>) => {
     setGetLastReportFn(() => fn);
   }, []);
+
+  // Insertion preview: receives the curated report when the doctor clicks Apply.
+  // The modal only renders when the backend enables it for your API key; otherwise
+  // reports arrive via handleReport (the fallback above).
+  const handleReportApply = useCallback((curated: unknown) => {
+    setCuratedReportData(curated);
+    setReports((prev) => [...prev, curated]);
+  }, []);
+
+  // updateTemplate: hand the SDK the doctor's existing EMR content so regeneration
+  // integrates it instead of producing an identical copy. Keys must match template
+  // property ids (see TEMPLATE_CONFIG in ./utils/config.ts).
+  const handleUpdateTemplate = useCallback(
+    () => ({
+      reason_for_consultation: 'Follow-up for chest pain reported last visit.',
+      treatment_plan: 'Continue aspirin 100mg daily; review in 2 weeks.',
+    }),
+    [],
+  );
 
   // Get last report
   const handleGetLastReport = async () => {
@@ -163,7 +183,6 @@ function App() {
       <div className="sofia-wrapper">
         <Omniscribe
           baseurl={config.baseUrl}
-          wssurl={config.wssUrl}
           apikey={config.apiKey}
           userid={userId}
           patientid={patientId}
@@ -173,6 +192,9 @@ function App() {
           isopen={isOpen}
           setIsOpen={setIsOpen}
           handleReport={handleReport}
+          onReportApply={handleReportApply}
+          updateTemplate={handleUpdateTemplate}
+          insertionPreviewClassNames={{ panel: 'sofia-preview-panel' }}
           setGetLastReport={handleSetGetLastReport}
           debug={debug ?? undefined}
           language={LanguageCode.es}
@@ -430,7 +452,9 @@ function App() {
           </div>
 
           {/* Report Data */}
-          {(lastReportData !== null || retrievedReportData !== null) && (
+          {(lastReportData !== null ||
+            curatedReportData !== null ||
+            retrievedReportData !== null) && (
             <div className="control-group">
               <h3>Report Data</h3>
 
@@ -438,6 +462,13 @@ function App() {
                 <div className="data-section">
                   <h4>Last Received Report:</h4>
                   <pre className="json-display">{JSON.stringify(lastReportData, null, 2)}</pre>
+                </div>
+              )}
+
+              {curatedReportData !== null && (
+                <div className="data-section">
+                  <h4>Curated Report (insertion preview → onReportApply):</h4>
+                  <pre className="json-display">{JSON.stringify(curatedReportData, null, 2)}</pre>
                 </div>
               )}
 

@@ -24,9 +24,8 @@ Edit `src/assets/environment.json`:
 
 ```json
 {
-  "baseUrl": "YOUR_BASE_URL",
-  "wssUrl": "YOUR_WSS_URL",
   "apiKey": "YOUR_API_KEY",
+  "baseUrl": "",
   "userId": "YOUR_DEFAULT_USER_ID",
   "patientId": "YOUR_DEFAULT_PATIENT_ID",
   "templateId": "YOUR_TEMPLATE_ID",
@@ -35,6 +34,8 @@ Edit `src/assets/environment.json`:
   "debug": true
 }
 ```
+
+> **`baseUrl` is optional.** For some newer keys the endpoint is resolved automatically, so you can leave `baseUrl` empty; other keys require it. Omniloy provides your credentials and tells you which. The deprecated `wssUrl` is no longer needed — the transcription URL is provided by the API.
 
 ### 2. Install and Run
 
@@ -47,14 +48,13 @@ Navigate to `http://localhost:8000`.
 
 ## SDK Loading
 
-The SofIA SDK is loaded via CDN in `src/index.html` (pinned to v1.0.0) before AngularJS so that the `<sofia-sdk>` custom element is registered when Angular compiles the template:
+The SofIA SDK is loaded via CDN in `src/index.html` (pinned to v1.0.8) before AngularJS so that the `<sofia-sdk>` custom element is registered when Angular compiles the template:
 
 ```html
-<script src="https://unpkg.com/@omniloy/sofia-sdk@1.0.0/dist/webcomponents.umd.js"
-        integrity="sha384-..." crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@omniloy/sofia-sdk@1.0.8/dist/webcomponents.umd.js"></script>
 ```
 
-All CDN scripts include Subresource Integrity (SRI) hashes to prevent supply chain attacks.
+The AngularJS and angular-route CDN scripts use Subresource Integrity (SRI) hashes. The SofIA SDK script is version-pinned; pin it to an exact version (not `@latest`) in production.
 
 ## SDK Attributes
 
@@ -65,9 +65,8 @@ The `<sofia-sdk>` element accepts the following attributes:
 | `patientid`            | Patient identifier                                               |
 | `userid`               | User / practitioner identifier                                   |
 | `templateid`           | Template identifier for clinical notes                           |
-| `apikey`               | API key for authentication                                       |
-| `baseurl`              | Base URL of the SofIA API                                        |
-| `wssurl`               | WebSocket URL for real-time communication                        |
+| `apikey`               | API key for authentication (provided by Omniloy) |
+| `baseurl`              | Base URL of the SofIA API — **optional**, only for legacy keys   |
 | `isopen`               | Whether the widget starts open                                   |
 | `language`             | Interface language (e.g., `es`)                                  |
 | `template`             | JSON string with the template schema                             |
@@ -81,7 +80,7 @@ Copy-paste this to integrate the Sofia SDK into any AngularJS project. See the c
 **1. Load the SDK** via CDN in your HTML (before AngularJS):
 
 ```html
-<script src="https://unpkg.com/@omniloy/sofia-sdk@1.0.0/dist/webcomponents.umd.js"></script>
+<script src="https://unpkg.com/@omniloy/sofia-sdk@1.0.8/dist/webcomponents.umd.js"></script>
 ```
 
 **2. Add the component** in your template:
@@ -92,8 +91,6 @@ Copy-paste this to integrate the Sofia SDK into any AngularJS project. See the c
   userid="{{userId}}"
   templateid="{{templateId}}"
   apikey="{{apiKey}}"
-  baseurl="{{baseUrl}}"
-  wssurl="{{wssUrl}}"
   isopen="{{isOpen}}"
   language="{{language}}"
 ></sofia-sdk>
@@ -127,7 +124,7 @@ Three callbacks must be set on the `<sofia-sdk>` element as properties:
 
 ```javascript
 component.handleReport = function(report) {
-  // Called when a report is generated
+  // Called when a report is generated (fallback when the insertion preview is off)
 };
 
 component.setIsOpen = function(valueOrFn) {
@@ -139,7 +136,30 @@ component.setGetLastReport = function(fn) {
 };
 ```
 
-The component also emits DOM events: `handle-report`, `set-is-open`, `set-get-last-report`.
+Assign these as **element properties** (as above) — the SDK does not emit `handle-report` / `set-is-open` DOM events, so Angular/DOM event bindings won't fire.
+
+## New in v1.0.8: insertion preview & EMR pre-fill
+
+Three optional properties, also assigned on the element (see `setupSofIAComponent` in `MainController.js`):
+
+```javascript
+// Insertion preview modal — the doctor reviews/curates the report before it is applied.
+// Enabled per API key on the backend; when off, reports arrive via handleReport instead.
+component.onReportApply = function(curated) {
+  // Receives the curated report the doctor approved
+};
+
+// EMR pre-fill — feed already-typed field content into generation so regeneration
+// integrates it instead of overwriting it. Keys must match template property ids.
+component.updateTemplate = function() {
+  return { reason_for_consultation: '...', treatment_plan: '...' };
+};
+
+// Optional: style the insertion preview modal (lives in the SDK shadow DOM).
+component.insertionPreviewClassNames = { panel: 'sofia-preview-panel' };
+```
+
+See the docs: [Insertion preview](https://omniloy.mintlify.app/en/sofia/en/sdk/insertion-preview) and [updateTemplate](https://omniloy.mintlify.app/en/sofia/en/sdk/update-template).
 
 ## Features
 

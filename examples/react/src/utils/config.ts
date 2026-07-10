@@ -156,8 +156,7 @@ export const TEMPLATE_CONFIG = {
             properties: {
               name: {
                 type: 'string',
-                description: 'Name of the disease.',
-                source: 'ICD10',
+                description: 'Name of the disease using the ICD-10.',
               },
               observations: {
                 type: 'string',
@@ -200,8 +199,7 @@ export const TEMPLATE_CONFIG = {
               },
               name: {
                 type: 'string',
-                description: 'Name of the disease.',
-                source: 'ICD10',
+                description: 'Name of the disease using the ICD-10.',
               },
             },
           },
@@ -220,8 +218,7 @@ export const TEMPLATE_CONFIG = {
           },
           name: {
             type: 'string',
-            description: 'Name of the disease.',
-            source: 'ICD10',
+            description: 'Name of the disease using the ICD-10.',
           },
           description: {
             type: 'string',

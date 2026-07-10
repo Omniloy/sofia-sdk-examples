@@ -3,8 +3,7 @@ import type { AppConfig, PatientData } from '../types';
 export const DEFAULT_CONFIG: AppConfig = {
   patientId: 'YOUR_DEFAULT_PATIENT_ID',
   userId: 'YOUR_DEFAULT_USER_ID',
-  baseUrl: 'YOUR_BASE_URL',
-  wssUrl: 'YOUR_WSS_URL',
+  baseUrl: '', // optional — leave empty unless Omniloy tells you your key needs it
   apiKey: 'YOUR_API_KEY',
   templateId: 'YOUR_TEMPLATE_ID',
   language: 'es',
@@ -154,8 +153,7 @@ export const TEMPLATE_CONFIG = {
             properties: {
               name: {
                 type: 'string',
-                description: 'Name of the disease.',
-                source: 'ICD10',
+                description: 'Name of the disease using the ICD-10.',
               },
               observations: {
                 type: 'string',
@@ -198,8 +196,7 @@ export const TEMPLATE_CONFIG = {
               },
               name: {
                 type: 'string',
-                description: 'Name of the disease.',
-                source: 'ICD10',
+                description: 'Name of the disease using the ICD-10.',
               },
             },
           },
@@ -218,8 +215,7 @@ export const TEMPLATE_CONFIG = {
           },
           name: {
             type: 'string',
-            description: 'Name of the disease.',
-            source: 'ICD10',
+            description: 'Name of the disease using the ICD-10.',
           },
           description: {
             type: 'string',

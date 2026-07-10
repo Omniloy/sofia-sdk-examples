@@ -26,13 +26,13 @@ cp .env.example .env
 ```
 
 ```env
+# VITE_BASE_URL is optional — Omniloy tells you whether your key needs it.
+VITE_API_KEY='your-api-key'
 VITE_BASE_URL='https://api.example.com/v1'
-VITE_WSS_URL='wss://ws.example.com'
-VITE_API_KEY='sk-xxxxxxxxxxxx'
 VITE_DEBUG=true
 ```
 
-> **Important**: Replace placeholder values with actual credentials provided by Omniloy.
+> **Important**: Replace placeholder values with actual credentials provided by Omniloy. The `wssurl` prop is no longer used — the transcription WebSocket URL is provided automatically by the settings API (deprecated and ignored since SDK 1.0.7).
 
 ### Installation & Run
 
@@ -57,9 +57,7 @@ function MyComponent() {
 
   return (
     <Omniscribe
-      baseurl="https://api.example.com/v1"
-      wssurl="wss://ws.example.com"
-      apikey="sk-xxxxxxxxxxxx"
+      apikey="your-api-key"
       userid="user-123"
       patientid="patient-456"
       templateid="tpl-789"
@@ -68,12 +66,16 @@ function MyComponent() {
       isopen={isOpen}
       setIsOpen={setIsOpen}
       handleReport={(report) => console.log('Report:', report)}
-      setGetLastReport={(fn) => { /* store fn for later */ }}
+      setGetLastReport={(fn) => { /* store fn; call it later to retrieve the last report */ }}
+      onReportApply={(curated) => console.log('Curated report:', curated)}
+      updateTemplate={() => ({ reason_for_consultation: 'From my EMR form' })}
       language={LanguageCode.es}
     />
   );
 }
 ```
+
+> If Omniloy tells you your key needs a base URL, add `baseurl="https://api.example.com/v1"`.
 
 ## How it works
 
@@ -89,7 +91,6 @@ import '@omniloy/sofia-sdk/react/index.css';
 ```tsx
 <Omniscribe
   baseurl={config.baseUrl}
-  wssurl={config.wssUrl}
   apikey={config.apiKey}
   userid={userId}
   patientid={patientId}
@@ -99,6 +100,9 @@ import '@omniloy/sofia-sdk/react/index.css';
   isopen={isOpen}
   setIsOpen={setIsOpen}
   handleReport={handleReport}
+  onReportApply={handleReportApply}
+  updateTemplate={handleUpdateTemplate}
+  insertionPreviewClassNames={{ panel: 'sofia-preview-panel' }}
   setGetLastReport={handleSetGetLastReport}
   language={LanguageCode.es}
   debug={debug}
@@ -123,8 +127,6 @@ const handleSetGetLastReport = useCallback((fn: () => Promise<unknown>) => {
 
 | Prop         | Type     | Description                                                          |
 |--------------|----------|----------------------------------------------------------------------|
-| `baseurl`    | string   | SofIA API endpoint                                                   |
-| `wssurl`     | string   | WebSocket URL for real-time features                                 |
 | `apikey`     | string   | Authentication key                                                   |
 | `userid`     | string   | Application user identifier                                         |
 | `patientid`  | string   | Patient context                                                      |
@@ -135,17 +137,22 @@ const handleSetGetLastReport = useCallback((fn: () => Promise<unknown>) => {
 
 | Prop          | Type         | Description                                  |
 |----------------------------|--------------|-------------------------------------------------------------------|
+| `baseurl`                  | string       | SofIA API endpoint. Optional for some keys; Omniloy tells you if yours needs it |
 | `isopen`                   | boolean      | Show/hide component                                               |
 | `language`                 | LanguageCode | Interface language (e.g., `LanguageCode.es`)                      |
 | `debug`                    | boolean      | Enable debug logging                                              |
 | `patientdata`              | object       | Patient information (see below)                                   |
+| `insertionPreviewClassNames` | object     | Class-name overrides for the insertion preview modal (keys: `backdrop`, `panel`, `header`, `body`, `footer`, `group`, `row`, `gapRow`, `applyButton`, `cancelButton`) |
 
+> **`wssurl` is deprecated and ignored** since SDK 1.0.7 — the transcription WebSocket URL is provided by the settings API. Don't pass it.
 
 ### Callbacks
 
 | Prop                | Signature                                                  | Description                          |
 |---------------------|------------------------------------------------------------|--------------------------------------|
-| `handleReport`      | `(report: unknown) => void`                                | Receives generated reports           |
+| `handleReport`      | `(report: unknown) => void`                                | Receives generated reports (fallback when the insertion preview modal is disabled) |
+| `onReportApply`     | `(curated: unknown) => void`                               | Receives the curated report when the doctor clicks **Apply** in the [insertion preview modal](https://omniloy.mintlify.app/sofia/en/sdk/insertion-preview). The modal is opt-in per API key on the backend |
+| `updateTemplate`    | `() => Record<string, unknown> \| null \| Promise<…>`      | Returns the doctor's existing EMR content (keyed by template property id) so generation integrates it. See [Pre-fill from your EMR](https://omniloy.mintlify.app/sofia/en/sdk/update-template) |
 | `setIsOpen`         | `(value: boolean \| (prev: boolean) => boolean) => void`   | Controls widget visibility           |
 | `setGetLastReport`  | `(fn: () => Promise<unknown>) => void`                     | Exposes async function for last report |
 
@@ -212,6 +219,8 @@ const patientData = {
 - **User ID / Patient ID Inputs**: Change session identifiers at runtime
 - **Debug Toggle**: Enable/disable SDK debug mode
 - **Patient Data Editor**: Edit patient context in real-time
+- **Insertion Preview**: `onReportApply` receives the curated report (shown in *Report Data* → *Curated Report*) when the doctor clicks **Apply** in the preview modal. The modal is opt-in per API key on the backend; otherwise reports arrive via `handleReport`
+- **EMR Pre-fill**: `updateTemplate` returns demo "existing EMR content" (keyed by real template property ids) so regeneration integrates it instead of producing an identical copy
 
 ## Key Files
 

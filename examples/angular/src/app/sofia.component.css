@@ -597,3 +597,10 @@
   font-size: 14px;
   margin-left: 56px;
 }
+
+/* Optional host-side styling for the v1.0.8 insertion preview modal.
+   Applied via the `insertionPreviewClassNames` property on <sofia-sdk>. */
+.sofia-preview-panel {
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}

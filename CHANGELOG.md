@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.8] - 2026-07-09
+
+### Added
+- Wired the new SDK 1.0.8 features across all examples: `onReportApply` (curated report from the insertion preview modal), `updateTemplate` (feed existing EMR field content into generation), and optional `insertionPreviewClassNames`
+- Added the React example to the root README (examples table, env-file table, quick start)
+
+### Changed
+- Updated `@omniloy/sofia-sdk` to `^1.0.8` in all examples
+- `baseurl` is now optional for some newer keys (the endpoint is resolved automatically) and required otherwise — Omniloy provides the credentials and tells you which
+- AngularJS: bumped the CDN script from `@0.0.10` to `@1.0.8`
+- README/CLAUDE: documented the new callbacks, corrected the "custom DOM events" note (callbacks are JS properties; those events are not emitted), and reframed template `source` as custom masters provisioned by Omniloy
+
+### Fixed
+- AngularJS: switched the template attribute from the deprecated `toolsargs` to `template`
+
+### Removed
+- `wssurl` from all examples and env files — deprecated and ignored since SDK 1.0.7 (the transcription WebSocket URL is delivered by the settings API)
+
+
 ## [1.0.0] - 2026-02-03
 
 ### Changed

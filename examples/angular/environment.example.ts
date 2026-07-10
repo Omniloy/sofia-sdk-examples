@@ -1,9 +1,8 @@
 export const environment = {
   production: false,
   sdk: {
-    baseUrl: 'YOUR_BASE_URL',       // e.g. https://api.example.com/v1
-    wssUrl: 'YOUR_WSS_URL',         // e.g. wss://ws.example.com
-    apiKey: 'YOUR_API_KEY',          // e.g. sk-xxxxxxxxxxxx
+    baseUrl: '',                     // optional — leave empty unless Omniloy tells you your key needs it
+    apiKey: 'YOUR_API_KEY',          // authentication key from Omniloy
     userId: 'YOUR_DEFAULT_USER_ID',
     patientId: 'YOUR_DEFAULT_PATIENT_ID',
     templateId: 'YOUR_TEMPLATE_ID',

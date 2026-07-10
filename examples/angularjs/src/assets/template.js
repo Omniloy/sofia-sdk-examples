@@ -130,8 +130,7 @@
               properties: {
                 name: {
                   type: 'string',
-                  description: 'Name of the disease.',
-                  source: 'ICD10',
+                  description: 'Name of the disease using the ICD-10.',
                 },
                 observations: {
                   type: 'string',
@@ -174,8 +173,7 @@
                 },
                 name: {
                   type: 'string',
-                  description: 'Name of the disease.',
-                  source: 'ICD10',
+                  description: 'Name of the disease using the ICD-10.',
                 },
               },
             },
@@ -194,8 +192,7 @@
             },
             name: {
               type: 'string',
-              description: 'Name of the disease.',
-              source: 'ICD10',
+              description: 'Name of the disease using the ICD-10.',
             },
             description: {
               type: 'string',

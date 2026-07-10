@@ -15,6 +15,10 @@ interface OmniscribeElement extends HTMLElement {
   handleReport?: (report: any) => void;
   setGetLastReport?: (fn: () => Promise<unknown>) => void;
   setIsOpen?: (valueOrFn: any) => void;
+  // v1.0.8 — insertion preview + EMR pre-fill
+  onReportApply?: (curated: Record<string, unknown>) => void;
+  updateTemplate?: () => Record<string, unknown> | null | undefined | Promise<Record<string, unknown> | null | undefined>;
+  insertionPreviewClassNames?: Record<string, string>;
   [key: string]: any;
 }
 
@@ -56,8 +60,7 @@ declare global {
       <div class="sofia-wrapper">
         <sofia-sdk
           id="sofia"
-          [attr.baseurl]="environment.sdk.baseUrl"
-          [attr.wssurl]="environment.sdk.wssUrl"
+          [attr.baseurl]="environment.sdk.baseUrl || null"
           [attr.apikey]="environment.sdk.apiKey"
           [attr.userid]="environment.sdk.userId"
           [attr.patientid]="environment.sdk.patientId"
@@ -289,12 +292,17 @@ declare global {
           </div>
 
           <!-- Report Data -->
-          <div class="control-group" *ngIf="lastReportData || retrievedReportData">
+          <div class="control-group" *ngIf="lastReportData || retrievedReportData || curatedReportData">
             <h3>Report Data</h3>
 
             <div *ngIf="lastReportData" class="data-section">
               <h4>Last Received Report:</h4>
               <pre class="json-display">{{ lastReportData | json }}</pre>
+            </div>
+
+            <div *ngIf="curatedReportData" class="data-section">
+              <h4>Curated Report (onReportApply):</h4>
+              <pre class="json-display">{{ curatedReportData | json }}</pre>
             </div>
 
             <div *ngIf="retrievedReportData" class="data-section">
@@ -332,6 +340,7 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
   debug: boolean = environment.sdk.debug ?? false;
   lastReportData: any = null;
   retrievedReportData: any = null;
+  curatedReportData: any = null;
   componentInitialized: boolean = false;
   reports: any[] = [];
 
@@ -364,7 +373,7 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
   }
 
   private validateConfig() {
-    const placeholders = ['YOUR_BASE_URL', 'YOUR_WSS_URL', 'YOUR_API_KEY', 'YOUR_DEFAULT_USER_ID', 'YOUR_DEFAULT_PATIENT_ID', 'YOUR_TEMPLATE_ID'];
+    const placeholders = ['YOUR_API_KEY', 'YOUR_DEFAULT_USER_ID', 'YOUR_DEFAULT_PATIENT_ID', 'YOUR_TEMPLATE_ID'];
     const sdk = this.environment.sdk;
     const invalid = Object.entries(sdk).filter(
       ([, value]) => typeof value === 'string' && placeholders.includes(value as string)
@@ -475,6 +484,30 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
       if (window.omniscribeSetGetLastReport)
         window.omniscribeSetGetLastReport(fn);
     };
+
+    // 4. onReportApply (v1.0.8) — receives the curated report when the doctor
+    //    clicks Apply in the insertion preview modal. The modal only renders
+    //    when it is enabled for your API key on the backend; otherwise reports
+    //    arrive via handleReport above.
+    component.onReportApply = (curated: Record<string, unknown>) => {
+      this.zone.run(() => {
+        this.curatedReportData = curated;
+        this.reports.push(curated);
+        this.cdr.detectChanges();
+      });
+    };
+
+    // 5. updateTemplate (v1.0.8) — hand SofIA whatever the doctor already typed
+    //    in your EMR form so regeneration integrates it (keys must match the
+    //    template property ids). Empty/unknown keys are skipped by the SDK.
+    component.updateTemplate = () => ({
+      reason_for_consultation: 'Follow-up for hypertension; patient reports occasional headaches.',
+      treatment_plan: 'Continue current antihypertensive; review blood pressure log in 2 weeks.',
+    });
+
+    // 6. insertionPreviewClassNames (v1.0.8) — optional host-side styling for the
+    //    insertion preview modal (it renders inside the SDK shadow DOM).
+    component.insertionPreviewClassNames = { panel: 'sofia-preview-panel' };
 
     // ===== SDK INTEGRATION END =====
 
