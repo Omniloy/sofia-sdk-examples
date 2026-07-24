@@ -212,4 +212,78 @@
       },
     },
   };
+
+  // Extras schema (SDK 1.0.9) — each top-level property under `properties`
+  // becomes one action button in the SDK chat footer (first two inline, the
+  // rest behind an overflow menu). Clicking a button extracts only that
+  // category from the transcript and delivers the items to `handleExtras`
+  // exactly as produced — the SDK does no field remapping, so the item shape
+  // is whatever you define here.
+  window.TemplateExtras = {
+    title: 'consultation_extras',
+    description:
+      'Extract the follow-up actions the doctor explicitly mentioned during the consultation, grouped by category. Only include actions the doctor explicitly requested. Return an empty array for any category not mentioned.',
+    type: 'object',
+    additionalProperties: false,
+    required: ['appointments', 'tests', 'referrals'],
+    properties: {
+      appointments: {
+        type: 'array',
+        description: 'Follow-up appointments or check-ups the doctor asked to schedule.',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['type', 'description'],
+          properties: {
+            type: {
+              type: 'string',
+              description: "Appointment type. E.g. 'follow_up', 'check_up'.",
+            },
+            description: {
+              type: 'string',
+              description: "Readable description. E.g. 'Follow-up visit in one month to assess progress'.",
+            },
+          },
+        },
+      },
+      tests: {
+        type: 'array',
+        description: 'Diagnostic tests (laboratory, imaging) the doctor ordered.',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['type', 'description'],
+          properties: {
+            type: {
+              type: 'string',
+              description: "Test type. E.g. 'laboratory', 'imaging'.",
+            },
+            description: {
+              type: 'string',
+              description: "Readable description. E.g. 'Complete blood panel with lipid profile'.",
+            },
+          },
+        },
+      },
+      referrals: {
+        type: 'array',
+        description: 'Referrals to other specialties the doctor indicated.',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['type', 'description'],
+          properties: {
+            type: {
+              type: 'string',
+              description: "Target specialty. E.g. 'cardiology'.",
+            },
+            description: {
+              type: 'string',
+              description: "Readable description. E.g. 'Refer to cardiology for new-onset murmur'.",
+            },
+          },
+        },
+      },
+    },
+  };
 })();

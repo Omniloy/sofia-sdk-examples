@@ -56,7 +56,7 @@ This example uses the SofIA SDK from npm:
 ```json
 {
   "dependencies": {
-    "@omniloy/sofia-sdk": "^1.0.8"
+    "@omniloy/sofia-sdk": "^1.0.9"
   }
 }
 ```
@@ -135,7 +135,14 @@ Copy-paste this to integrate the Sofia SDK into any Angular project. See the cod
 
 ```typescript
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import '@omniloy/sofia-sdk';
+import { SofiaSDK } from '@omniloy/sofia-sdk';
+
+// The package ships `sideEffects: false`, so a bare `import '@omniloy/sofia-sdk'`
+// gets tree-shaken out of production builds and <sofia-sdk> never registers.
+// Register the element explicitly (do this once, e.g. in main.ts):
+if (!customElements.get('sofia-sdk')) {
+  customElements.define('sofia-sdk', SofiaSDK);
+}
 
 @Component({
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -205,6 +212,22 @@ component.insertionPreviewClassNames = { panel: 'sofia-preview-panel' };
 
 See the [insertion preview](https://omniloy.mintlify.app/en/sofia/en/sdk/insertion-preview) and [updateTemplate](https://omniloy.mintlify.app/en/sofia/en/sdk/update-template) guides for the full flow.
 
+### New in v1.0.9
+
+**Extras — per-category action buttons.** Provide a JSON Schema via the `template-extras` attribute; each top-level property (appointments, tests, referrals, …) renders one button in the SDK chat footer. Clicking a button extracts only that category from the transcript and delivers the items to `handleExtras` exactly as the schema produced them (no field remapping):
+
+```html
+<sofia-sdk [attr.template-extras]="templateExtrasString" ...></sofia-sdk>
+```
+
+```typescript
+component.handleExtras = (extras) => {
+  // e.g. [{ type: 'laboratory', description: 'Complete blood panel' }]
+};
+```
+
+**`usermedicalspecialty`** (optional attribute) — the doctor's specialty, attached to tracked events for analytics segmentation. Note the all-lowercase name: the camelCase `userMedicalSpecialty` spelling that shipped in v1.0.8 was renamed and is silently ignored since v1.0.9.
+
 ## Development Features
 
 - **Runtime Controls** - Open/Close SDK, fetch reports, reload component
@@ -214,6 +237,7 @@ See the [insertion preview](https://omniloy.mintlify.app/en/sofia/en/sdk/inserti
 - **Debug Toggle** - Enable/disable debug mode on the SDK component
 - **Template ID Input** - Dynamically change the template ID
 - **Curated Report Display** - Shows the payload from `onReportApply` (insertion preview modal, v1.0.8)
+- **Extras Display** - Shows the items delivered to `handleExtras` (per-category extras, v1.0.9)
 
 ## Documentation
 

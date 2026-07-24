@@ -8,6 +8,8 @@ export interface AppConfig {
   language?: string;
   isOpen: boolean;
   patientData?: PatientData;
+  /** Optional (SDK 1.0.9+). Doctor's medical specialty, attached to tracked events for analytics. */
+  userMedicalSpecialty?: string;
 }
 
 export interface PatientData {
@@ -35,6 +37,9 @@ declare global {
         | Promise<Record<string, unknown> | null | undefined>;
       // Optional class-name overrides for the insertion preview modal (shadow DOM)
       insertionPreviewClassNames: Record<string, string>;
+      // Extras (SDK 1.0.9) — per-category action buttons; receives the extracted
+      // items for the clicked category exactly as the schema produced them
+      handleExtras: (extras: Array<Record<string, unknown>>) => void;
     };
   }
 }

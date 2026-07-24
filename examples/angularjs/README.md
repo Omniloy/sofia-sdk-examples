@@ -48,10 +48,10 @@ Navigate to `http://localhost:8000`.
 
 ## SDK Loading
 
-The SofIA SDK is loaded via CDN in `src/index.html` (pinned to v1.0.8) before AngularJS so that the `<sofia-sdk>` custom element is registered when Angular compiles the template:
+The SofIA SDK is loaded via CDN in `src/index.html` (pinned to v1.0.9) before AngularJS so that the `<sofia-sdk>` custom element is registered when Angular compiles the template:
 
 ```html
-<script src="https://unpkg.com/@omniloy/sofia-sdk@1.0.8/dist/webcomponents.umd.js"></script>
+<script src="https://unpkg.com/@omniloy/sofia-sdk@1.0.9/dist/webcomponents.umd.js"></script>
 ```
 
 The AngularJS and angular-route CDN scripts use Subresource Integrity (SRI) hashes. The SofIA SDK script is version-pinned; pin it to an exact version (not `@latest`) in production.
@@ -72,6 +72,8 @@ The `<sofia-sdk>` element accepts the following attributes:
 | `template`             | JSON string with the template schema                             |
 | `patientdata`          | JSON string with patient context                                 |
 | `debug`                | Enable debug mode (console output)                               |
+| `usermedicalspecialty` | (1.0.9+) Doctor's specialty, attached to tracked events — optional |
+| `template-extras`      | (1.0.9+) JSON Schema defining per-category extras action buttons (requires `handleExtras`) |
 
 ## Minimal Integration
 
@@ -80,7 +82,7 @@ Copy-paste this to integrate the Sofia SDK into any AngularJS project. See the c
 **1. Load the SDK** via CDN in your HTML (before AngularJS):
 
 ```html
-<script src="https://unpkg.com/@omniloy/sofia-sdk@1.0.8/dist/webcomponents.umd.js"></script>
+<script src="https://unpkg.com/@omniloy/sofia-sdk@1.0.9/dist/webcomponents.umd.js"></script>
 ```
 
 **2. Add the component** in your template:
@@ -160,6 +162,21 @@ component.insertionPreviewClassNames = { panel: 'sofia-preview-panel' };
 ```
 
 See the docs: [Insertion preview](https://omniloy.mintlify.app/en/sofia/en/sdk/insertion-preview) and [updateTemplate](https://omniloy.mintlify.app/en/sofia/en/sdk/update-template).
+
+## New in v1.0.9: extras (per-category action buttons)
+
+Provide a JSON Schema via the `template-extras` attribute (see `window.TemplateExtras` in `src/assets/template.js`); each top-level property (appointments, tests, referrals, …) renders one button in the SDK chat footer. Clicking a button extracts only that category from the transcript and delivers the items to `handleExtras` exactly as the schema produced them — no field remapping:
+
+```javascript
+component.setAttribute('template-extras', JSON.stringify(window.TemplateExtras));
+
+component.handleExtras = function(extras) {
+  // e.g. [{ type: 'laboratory', description: 'Complete blood panel' }]
+  $scope.$evalAsync(function() { $scope.lastExtras = extras; });
+};
+```
+
+v1.0.9 also adds the optional `usermedicalspecialty` attribute (all-lowercase — the camelCase `userMedicalSpecialty` from v1.0.8 was renamed and is now silently ignored).
 
 ## Features
 

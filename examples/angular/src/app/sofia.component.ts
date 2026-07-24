@@ -6,7 +6,7 @@ import {
   OnDestroy
 } from '@angular/core';
 import { environment } from '../../environment';
-import { Template } from './template/Template';
+import { Template, TemplateExtras } from './template/Template';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { JsonPipe, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -19,6 +19,8 @@ interface OmniscribeElement extends HTMLElement {
   onReportApply?: (curated: Record<string, unknown>) => void;
   updateTemplate?: () => Record<string, unknown> | null | undefined | Promise<Record<string, unknown> | null | undefined>;
   insertionPreviewClassNames?: Record<string, string>;
+  // v1.0.9 — extras: per-category action buttons
+  handleExtras?: (extras: Array<Record<string, unknown>>) => void;
   [key: string]: any;
 }
 
@@ -66,6 +68,8 @@ declare global {
           [attr.patientid]="environment.sdk.patientId"
           [attr.templateid]="_localTemplateId || environment.sdk.templateId"
           [attr.template]="templateStringValue"
+          [attr.template-extras]="templateExtrasString"
+          [attr.usermedicalspecialty]="userMedicalSpecialty || null"
           [attr.patientdata]="patientDataString"
           [attr.language]="environment.sdk.language || 'es'"
           [attr.isopen]="isOpen ? 'true' : 'false'"
@@ -292,7 +296,7 @@ declare global {
           </div>
 
           <!-- Report Data -->
-          <div class="control-group" *ngIf="lastReportData || retrievedReportData || curatedReportData">
+          <div class="control-group" *ngIf="lastReportData || retrievedReportData || curatedReportData || lastExtrasData">
             <h3>Report Data</h3>
 
             <div *ngIf="lastReportData" class="data-section">
@@ -309,6 +313,11 @@ declare global {
               <h4>Retrieved Report Data:</h4>
               <pre class="json-display">{{ retrievedReportData | json }}</pre>
             </div>
+
+            <div *ngIf="lastExtrasData" class="data-section">
+              <h4>Extras (handleExtras):</h4>
+              <pre class="json-display">{{ lastExtrasData | json }}</pre>
+            </div>
           </div>
         </div>
       </div>
@@ -323,6 +332,7 @@ declare global {
 export class OmniscribeDemoComponent implements OnInit, OnDestroy {
   environment = environment;
   template: any = Template;
+  templateExtras: any = TemplateExtras;
   patientData: any = {
     extraData: {
       clinical_notes: 'Patient has celiac disease and diabetes',
@@ -341,6 +351,7 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
   lastReportData: any = null;
   retrievedReportData: any = null;
   curatedReportData: any = null;
+  lastExtrasData: any = null;
   componentInitialized: boolean = false;
   reports: any[] = [];
 
@@ -508,6 +519,17 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
     // 6. insertionPreviewClassNames (v1.0.8) — optional host-side styling for the
     //    insertion preview modal (it renders inside the SDK shadow DOM).
     component.insertionPreviewClassNames = { panel: 'sofia-preview-panel' };
+
+    // 7. handleExtras (v1.0.9) — fired when the user clicks an extras category
+    //    button (defined by the template-extras attribute). Items arrive exactly
+    //    as the schema produced them — a real EMR would map them to
+    //    orders/bookings; the dev console just displays them.
+    component.handleExtras = (extras: Array<Record<string, unknown>>) => {
+      this.zone.run(() => {
+        this.lastExtrasData = extras;
+        this.cdr.detectChanges();
+      });
+    };
 
     // ===== SDK INTEGRATION END =====
 
@@ -798,6 +820,16 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
   // Getters for stringified values
   get templateStringValue(): string {
     return JSON.stringify(this.template);
+  }
+
+  get templateExtrasString(): string {
+    return JSON.stringify(this.templateExtras);
+  }
+
+  // Optional (v1.0.9). Cast keeps compilation working with environment.ts files
+  // that predate the userMedicalSpecialty field.
+  get userMedicalSpecialty(): string {
+    return (this.environment.sdk as { userMedicalSpecialty?: string }).userMedicalSpecialty ?? '';
   }
 
   get patientDataString(): string {

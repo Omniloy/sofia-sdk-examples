@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, DEFAULT_PATIENT_DATA, TEMPLATE_CONFIG } from "../utils/config";
+import { DEFAULT_CONFIG, DEFAULT_PATIENT_DATA, TEMPLATE_CONFIG, TEMPLATE_EXTRAS_CONFIG } from "../utils/config";
 
 export class SofIA {
   // Component state
@@ -9,12 +9,14 @@ export class SofIA {
   private getLastReportFn: (() => Promise<unknown>) | null = null;
   private lastReportData: unknown = null;
   private retrievedReportData: unknown = null;
+  private lastExtrasData: unknown = null;
 
   // Configuration state
   private debug = false;
   private config = { ...DEFAULT_CONFIG };
   private patientData = { ...DEFAULT_PATIENT_DATA };
   private template = { ...TEMPLATE_CONFIG };
+  private templateExtras = { ...TEMPLATE_EXTRAS_CONFIG };
 
   // Editor states
   private isEditingTemplate = false;
@@ -86,6 +88,7 @@ export class SofIA {
             patientId: envData.sdk.patientId || envData.sdk.defaultPatientId || this.config.patientId,
             userId: envData.sdk.userId || envData.sdk.defaultUserId || this.config.userId,
             templateId: envData.sdk.templateId || this.config.templateId,
+            userMedicalSpecialty: envData.sdk.userMedicalSpecialty || this.config.userMedicalSpecialty,
             language: envData.sdk.language || this.config.language,
             isOpen: envData.sdk.isOpen ?? this.config.isOpen
           };
@@ -170,6 +173,16 @@ export class SofIA {
       component.setAttribute('debug', 'true');
     }
 
+    // Doctor's medical specialty (SDK 1.0.9+) — optional, attached to tracked
+    // events for analytics segmentation. Note: all-lowercase attribute name.
+    if (this.config.userMedicalSpecialty) {
+      component.setAttribute('usermedicalspecialty', this.config.userMedicalSpecialty);
+    }
+
+    // Extras (SDK 1.0.9) — one action button per category defined in the schema.
+    // Requires both this attribute and a wired `handleExtras` callback (below).
+    component.setAttribute('template-extras', JSON.stringify(this.templateExtras));
+
     // 3. Set required callbacks
     component.handleReport = (report: unknown) => {
       this.lastReportData = report;
@@ -189,7 +202,7 @@ export class SofIA {
       this.updateUI();
     };
 
-    // 4. Set new-feature callbacks (SDK 1.0.8+)
+    // 4. Set new-feature callbacks (SDK 1.0.8+ / 1.0.9)
     // Insertion preview modal: receives the curated report when the doctor clicks Apply.
     // Requires the backend `showInsertionPreview` flag for your API key; falls back to handleReport otherwise.
     component.onReportApply = (curated: unknown) => {
@@ -208,6 +221,15 @@ export class SofIA {
 
     // Optional: class-name overrides for the insertion preview modal (rendered in the SDK shadow DOM).
     component.insertionPreviewClassNames = { panel: 'sofia-preview-panel' };
+
+    // Extras (SDK 1.0.9): fired when the user clicks a category button. Items arrive
+    // exactly as TEMPLATE_EXTRAS_CONFIG produced them — a real EMR would map them to
+    // orders/bookings; the dev console just displays them.
+    component.handleExtras = (extras: Array<Record<string, unknown>>) => {
+      this.lastExtrasData = extras;
+      this.updateUI();
+      this.showReportData();
+    };
 
     // 5. Mount the component
     container.appendChild(component);
@@ -362,6 +384,15 @@ export class SofIA {
       if (retrievedReportSection && retrievedReportContent) {
         retrievedReportSection.style.display = 'block';
         retrievedReportContent.textContent = JSON.stringify(this.retrievedReportData, null, 2);
+      }
+    }
+
+    if (this.lastExtrasData) {
+      const extrasSection = document.getElementById('extras-section');
+      const extrasContent = document.getElementById('extras-content');
+      if (extrasSection && extrasContent) {
+        extrasSection.style.display = 'block';
+        extrasContent.textContent = JSON.stringify(this.lastExtrasData, null, 2);
       }
     }
   }

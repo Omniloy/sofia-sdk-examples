@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { DEFAULT_PATIENT_DATA, TEMPLATE_CONFIG } from './utils/config.ts';
+import { DEFAULT_PATIENT_DATA, TEMPLATE_CONFIG, TEMPLATE_EXTRAS_CONFIG } from './utils/config.ts';
 import { LanguageCode, Omniscribe } from '@omniloy/sofia-sdk/react';
 import '@omniloy/sofia-sdk/react/index.css';
 
@@ -7,6 +7,8 @@ const config = {
   // baseUrl is optional — Omniloy tells you whether your key needs it.
   baseUrl: import.meta.env.VITE_BASE_URL,
   apiKey: import.meta.env.VITE_API_KEY,
+  // Optional (SDK 1.0.9+) — doctor's specialty, attached to tracked events for analytics.
+  userMedicalSpecialty: import.meta.env.VITE_USER_MEDICAL_SPECIALTY,
 };
 
 function App() {
@@ -16,6 +18,7 @@ function App() {
   const [lastReportData, setLastReportData] = useState<unknown>(null);
   const [curatedReportData, setCuratedReportData] = useState<unknown>(null);
   const [retrievedReportData, setRetrievedReportData] = useState<unknown>(null);
+  const [extrasData, setExtrasData] = useState<unknown>(null);
   const [getLastReportFn, setGetLastReportFn] = useState<(() => Promise<unknown>) | null>(null);
 
   // Configuration
@@ -72,6 +75,13 @@ function App() {
     }),
     [],
   );
+
+  // Extras (SDK 1.0.9): fired when the user clicks a category button (defined by
+  // the templateExtras schema). Items arrive exactly as the schema produced them —
+  // a real EMR would map them to orders/bookings; the dev console just displays them.
+  const handleExtras = useCallback((extras: Array<Record<string, unknown>>) => {
+    setExtrasData(extras);
+  }, []);
 
   // Get last report
   const handleGetLastReport = async () => {
@@ -188,11 +198,14 @@ function App() {
           patientid={patientId}
           templateid={templateId}
           template={template}
+          templateExtras={TEMPLATE_EXTRAS_CONFIG}
+          usermedicalspecialty={config.userMedicalSpecialty || undefined}
           patientdata={patientData}
           isopen={isOpen}
           setIsOpen={setIsOpen}
           handleReport={handleReport}
           onReportApply={handleReportApply}
+          handleExtras={handleExtras}
           updateTemplate={handleUpdateTemplate}
           insertionPreviewClassNames={{ panel: 'sofia-preview-panel' }}
           setGetLastReport={handleSetGetLastReport}
@@ -454,7 +467,8 @@ function App() {
           {/* Report Data */}
           {(lastReportData !== null ||
             curatedReportData !== null ||
-            retrievedReportData !== null) && (
+            retrievedReportData !== null ||
+            extrasData !== null) && (
             <div className="control-group">
               <h3>Report Data</h3>
 
@@ -478,6 +492,13 @@ function App() {
                   <pre className="json-display">
                     {JSON.stringify(retrievedReportData, null, 2)}
                   </pre>
+                </div>
+              )}
+
+              {extrasData !== null && (
+                <div className="data-section">
+                  <h4>Extras (handleExtras):</h4>
+                  <pre className="json-display">{JSON.stringify(extrasData, null, 2)}</pre>
                 </div>
               )}
             </div>

@@ -1,6 +1,6 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { OmniscribeDemoComponent } from './sofia.component';
-import '@omniloy/sofia-sdk';
+// <sofia-sdk> is registered in main.ts (see the note there about sideEffects).
 
 @Component({
   selector: 'app-root',
