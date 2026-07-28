@@ -25,7 +25,9 @@ angular.module('myApp').controller('MainController', [
     // Configuration with defaults
     $scope.debug = false;
     $scope.templateObject = window.Template || {};
+    $scope.templateExtrasObject = window.TemplateExtras || {};
     $scope.patientData = DEFAULT_PATIENT_DATA;
+    $scope.lastExtras = null;
 
     // Editor states
     $scope.isEditingTemplate = false;
@@ -317,6 +319,8 @@ angular.module('myApp').controller('MainController', [
       $scope.isOpen = config.isOpen;
       $scope.language = config.language || 'es';
       $scope.debug = config.debug ?? false;
+      // Optional (SDK 1.0.9+) — attached to tracked events for analytics
+      $scope.userMedicalSpecialty = config.userMedicalSpecialty || '';
 
       if (config.patientData) {
         $scope.patientData = { ...DEFAULT_PATIENT_DATA, ...config.patientData };
@@ -386,6 +390,10 @@ angular.module('myApp').controller('MainController', [
       if ($scope.debug) {
         component.setAttribute('debug', 'true');
       }
+      // Doctor's medical specialty (SDK 1.0.9+) — optional, all-lowercase attribute
+      if ($scope.userMedicalSpecialty) {
+        component.setAttribute('usermedicalspecialty', $scope.userMedicalSpecialty);
+      }
 
       // Set JSON attributes only if they are valid
       try {
@@ -402,6 +410,17 @@ angular.module('myApp').controller('MainController', [
         }
       } catch (e) {
         if ($scope.debug) console.warn('Error setting patientdata:', e);
+      }
+
+      // Extras (SDK 1.0.9) — one action button per category defined in the
+      // schema (see assets/template.js). Requires both this attribute and a
+      // wired `handleExtras` callback (below).
+      try {
+        if ($scope.templateExtrasObject && Object.keys($scope.templateExtrasObject).length > 0) {
+          component.setAttribute('template-extras', JSON.stringify($scope.templateExtrasObject));
+        }
+      } catch (e) {
+        if ($scope.debug) console.warn('Error setting template-extras:', e);
       }
 
       // 3. Set required callbacks
@@ -439,6 +458,16 @@ angular.module('myApp').controller('MainController', [
 
       // Optional: class-name overrides to style the insertion preview modal.
       component.insertionPreviewClassNames = { panel: 'sofia-preview-panel' };
+
+      // Extras (SDK 1.0.9): fired when the user clicks a category button.
+      // Items arrive exactly as the template-extras schema produced them — a
+      // real EMR would map them to orders/bookings; the dev console just
+      // displays them.
+      component.handleExtras = function(extras) {
+        $scope.$evalAsync(function() {
+          $scope.lastExtras = extras;
+        });
+      };
 
       // ===== SDK INTEGRATION END =====
 

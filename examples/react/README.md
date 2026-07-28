@@ -69,6 +69,8 @@ function MyComponent() {
       setGetLastReport={(fn) => { /* store fn; call it later to retrieve the last report */ }}
       onReportApply={(curated) => console.log('Curated report:', curated)}
       updateTemplate={() => ({ reason_for_consultation: 'From my EMR form' })}
+      templateExtras={myTemplateExtras}
+      handleExtras={(extras) => console.log('Extras:', extras)}
       language={LanguageCode.es}
     />
   );
@@ -143,6 +145,8 @@ const handleSetGetLastReport = useCallback((fn: () => Promise<unknown>) => {
 | `debug`                    | boolean      | Enable debug logging                                              |
 | `patientdata`              | object       | Patient information (see below)                                   |
 | `insertionPreviewClassNames` | object     | Class-name overrides for the insertion preview modal (keys: `backdrop`, `panel`, `header`, `body`, `footer`, `group`, `row`, `gapRow`, `applyButton`, `cancelButton`) |
+| `usermedicalspecialty`     | string       | (1.0.9+) Doctor's specialty, attached to tracked events for analytics. **All-lowercase** — the camelCase `userMedicalSpecialty` from 1.0.8 was renamed and is silently ignored |
+| `templateExtras`           | object       | (1.0.9+) JSON Schema whose top-level properties define per-category extras action buttons (requires `handleExtras`) |
 
 > **`wssurl` is deprecated and ignored** since SDK 1.0.7 — the transcription WebSocket URL is provided by the settings API. Don't pass it.
 
@@ -155,6 +159,7 @@ const handleSetGetLastReport = useCallback((fn: () => Promise<unknown>) => {
 | `updateTemplate`    | `() => Record<string, unknown> \| null \| Promise<…>`      | Returns the doctor's existing EMR content (keyed by template property id) so generation integrates it. See [Pre-fill from your EMR](https://omniloy.mintlify.app/sofia/en/sdk/update-template) |
 | `setIsOpen`         | `(value: boolean \| (prev: boolean) => boolean) => void`   | Controls widget visibility           |
 | `setGetLastReport`  | `(fn: () => Promise<unknown>) => void`                     | Exposes async function for last report |
+| `handleExtras`      | `(extras: Array<Record<string, unknown>>) => void`         | (1.0.9+) Receives the extracted items when the user clicks an extras category button. Items arrive exactly as the `templateExtras` schema produced them — no field remapping |
 
 ## Patient Data Structure
 

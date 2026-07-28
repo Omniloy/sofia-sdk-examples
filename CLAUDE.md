@@ -30,7 +30,9 @@ All examples integrate the same `<sofia-sdk>` web component with three different
 
 - **vanilla-ts**: ES6 class (`SofIA`) in `src/components/SofIA.ts` manages the component lifecycle. Config loaded via `fetch('/assets/environment.json')` at runtime. Vite bundles the SDK.
 - **angular**: Angular standalone component (`OmniscribeDemoComponent`) in `src/app/sofia.component.ts` with `[attr.*]` bindings. Config imported from `environment.ts`. Angular CLI bundles the SDK.
-- **angularjs**: AngularJS controller (`MainController`) in `src/app/controllers/MainController.js` with `$scope` bindings. Config loaded via `$http.get('assets/environment.json')`. SDK loaded from CDN via `<script>` tag (pinned to `@1.0.8`, no bundler). Has a retry mechanism for component initialization (3 attempts).
+
+> **Custom element registration (vanilla-ts & angular):** the SDK package ships `"sideEffects": false`, so a bare `import '@omniloy/sofia-sdk'` gets tree-shaken out of production builds and `<sofia-sdk>` never registers. Both bundled examples import the `SofiaSDK` constructor in their entry point and call `customElements.define('sofia-sdk', SofiaSDK)` behind a `customElements.get` guard. A local `src/sofia-sdk.d.ts` declares the module because the package's root `exports` entry has no `types` condition.
+- **angularjs**: AngularJS controller (`MainController`) in `src/app/controllers/MainController.js` with `$scope` bindings. Config loaded via `$http.get('assets/environment.json')`. SDK loaded from CDN via `<script>` tag (pinned to `@1.0.9`, no bundler). Has a retry mechanism for component initialization (3 attempts).
 - **react**: React 19 functional component (`App`) in `src/App.tsx` with `useRef` and `useEffect`. Config loaded via `fetch('/assets/environment.json')` at runtime. Vite bundles the SDK.
 
 ### Configuration Flow
@@ -39,11 +41,11 @@ Each example follows: load environment config → create `<sofia-sdk>` element �
 
 ### Template Configuration
 
-Template definitions live in separate files:
-- `examples/vanilla-ts/src/utils/config.ts` — `TEMPLATE_CONFIG` constant
-- `examples/angular/src/app/template/Template.ts` — default export
-- `examples/angularjs/src/assets/template.js` — global `Template` object
-- `examples/react/src/utils/config.ts` — `TEMPLATE_CONFIG` constant
+Template definitions live in separate files (each also exports the extras schema for SDK 1.0.9's per-category action buttons):
+- `examples/vanilla-ts/src/utils/config.ts` — `TEMPLATE_CONFIG` and `TEMPLATE_EXTRAS_CONFIG` constants
+- `examples/angular/src/app/template/Template.ts` — `Template` and `TemplateExtras` exports
+- `examples/angularjs/src/assets/template.js` — global `Template` and `TemplateExtras` objects
+- `examples/react/src/utils/config.ts` — `TEMPLATE_CONFIG` and `TEMPLATE_EXTRAS_CONFIG` constants
 
 ## SDK Property Naming
 
@@ -52,8 +54,10 @@ HTML attributes are **lowercase** (web component standard):
 - `baseurl` (optional for some newer keys — the endpoint is resolved automatically since 1.0.8; required otherwise. Omniloy provides the credentials and tells you which)
 - `template`, `templateid`, `patientdata`
 - `isopen`, `language`, `debug`
+- `usermedicalspecialty` (1.0.9+, optional — attached to tracked events for analytics. All-lowercase: the camelCase `userMedicalSpecialty` from 1.0.8 was renamed and is silently ignored)
+- `template-extras` (1.0.9+, optional — JSON Schema for per-category extras action buttons; kebab-case attribute for the camelCase `templateExtras` JS property)
 
-Function/JSON props are assigned as **JS properties** on the element (not HTML attributes): `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate`, `insertionPreviewClassNames`.
+Function/JSON props are assigned as **JS properties** on the element (not HTML attributes): `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate`, `insertionPreviewClassNames`, `handleExtras`, `templateExtras`.
 
 ## Deprecated Properties
 
@@ -90,6 +94,11 @@ component.setGetLastReport = (fn) => { /* exposes async function to retrieve las
 component.onReportApply = (curated) => { /* curated report from the insertion preview modal */ };
 component.updateTemplate = () => ({ /* existing EMR content keyed by template property id */ });
 component.insertionPreviewClassNames = { panel: '...' }; // optional modal styling
+
+// New in SDK 1.0.9 — extras: per-category action buttons defined by the
+// `template-extras` schema (one button per top-level property). Items are
+// delivered exactly as the schema produced them — no field remapping.
+component.handleExtras = (extras) => { /* items for the clicked category */ };
 ```
 
 > **The SDK does NOT emit `handle-report` / `set-is-open` / `set-get-last-report` DOM events.** Use the callback **properties** above. The only real DOM event is `sofia:transcriber-url-changed`.
@@ -126,7 +135,7 @@ All four examples must share the same visual design and dev console layout:
    - Template ID: Text input for `templateid`
    - Debug Toggle: Checkbox for `debug` attribute
    - Patient Data Editor: JSON editor for `patientdata` with validation
-   - Report Display: Shows received reports
+   - Report Display: Shows received reports (including curated reports from `onReportApply` and extras from `handleExtras`)
 
 The dev console does **NOT** include: Title editor (deprecated), Only Chat toggle (deprecated).
 
@@ -150,6 +159,6 @@ For each example (`vanilla-ts`, `angular`, `angularjs`, `react`):
 5. Environment example file has correct structure
 6. Dev console has: Template editor, Patient Data editor, templateid input, debug toggle
 7. Dev console does NOT have: Title editor, Only Chat toggle
-8. `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate` callbacks are correctly wired
+8. `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate`, `handleExtras` callbacks are correctly wired, and the extras schema is passed via `template-extras` (attribute) / `templateExtras` (React prop)
 9. No hardcoded API keys or credentials in source
 10. README instructions work end-to-end

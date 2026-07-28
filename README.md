@@ -2,7 +2,7 @@
 
 ![Examples](https://img.shields.io/badge/Examples-4-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![SDK Version](https://img.shields.io/badge/SDK-v1.0.8-blue)
+![SDK Version](https://img.shields.io/badge/SDK-v1.0.9-blue)
 
 Quick examples showing how to integrate **Sofia SDK** (`@omniloy/sofia-sdk`) into different web frameworks. Pick your framework and get started in minutes!
 
@@ -145,7 +145,19 @@ component.updateTemplate = () => ({
 
 // NEW (SDK 1.0.8, optional) — class-name overrides to style the insertion preview modal.
 component.insertionPreviewClassNames = { panel: 'my-preview-panel' };
+
+// NEW (SDK 1.0.9) — extras: per-category action buttons (appointments, tests, referrals, …).
+// Provide a JSON Schema via the `template-extras` attribute (or `templateExtras` prop in React);
+// each top-level property renders one button in the SDK chat footer. Clicking a button extracts
+// only that category from the transcript and delivers the items EXACTLY as the schema produced
+// them — no field remapping.
+component.setAttribute('template-extras', JSON.stringify(templateExtras));
+component.handleExtras = (extras) => {
+  console.log('Extras:', extras); // e.g. [{ type: 'laboratory', description: 'Complete blood panel' }]
+};
 ```
+
+> **New in SDK 1.0.9:** the optional `usermedicalspecialty` attribute attaches the doctor's specialty to tracked events for analytics. Note the all-lowercase name — the camelCase `userMedicalSpecialty` that shipped in 1.0.8 was renamed and is now silently ignored (breaking change for React hosts using the old spelling).
 
 See the [Insertion preview](https://omniloy.mintlify.app/sofia/en/sdk/insertion-preview) and [updateTemplate](https://omniloy.mintlify.app/sofia/en/sdk/update-template) guides for the full flow.
 

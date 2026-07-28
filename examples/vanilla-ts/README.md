@@ -103,16 +103,30 @@ component.updateTemplate = () => ({
   reason_for_consultation: 'Follow-up for hypertension',
 });
 
-// 4. Mount the component
+// 4. (SDK 1.0.9) Extras — per-category action buttons (appointments, tests, referrals…)
+component.setAttribute('template-extras', JSON.stringify(templateExtras));
+component.handleExtras = (extras) => {
+  // Items for the clicked category, exactly as your template-extras schema produced them
+  console.log('Extras:', extras);
+};
+
+// 5. Mount the component
 document.getElementById('container').appendChild(component);
 ```
 
 ## How it works
 
-1. **Import SofIA SDK** (in `main.ts`):
+1. **Import and register the SofIA SDK** (in `main.ts`):
 
 ```typescript
-import '@omniloy/sofia-sdk';
+import { SofiaSDK } from '@omniloy/sofia-sdk';
+
+// The package ships `sideEffects: false`, so a bare `import '@omniloy/sofia-sdk'`
+// gets tree-shaken out of production builds and <sofia-sdk> never registers.
+// Register the element explicitly:
+if (!customElements.get('sofia-sdk')) {
+  customElements.define('sofia-sdk', SofiaSDK);
+}
 ```
 
 2. **Create and configure the component** (in `SofIA.ts`):
@@ -170,6 +184,8 @@ container.appendChild(component);
 | `language`             | Interface language (e.g., `"es"`, `"en"`)                                                  |
 | `debug`                | Enable debug logging (`"true"`)                                                            |
 | `patientdata`          | JSON string with patient information                                                       |
+| `usermedicalspecialty` | (1.0.9+) Doctor's medical specialty, attached to tracked events for analytics segmentation |
+| `template-extras`      | (1.0.9+) JSON Schema whose top-level properties define per-category extras action buttons (requires `handleExtras`) |
 
 > `wssurl` is **deprecated and ignored** since 1.0.7 — the transcription WebSocket URL is provided by the API. Do not set it.
 
@@ -190,6 +206,12 @@ New in SDK 1.0.8 (assigned as JS properties, same as above):
 | `onReportApply`     | `(curated: unknown) => void`                               | Receives the curated report from the [insertion preview modal](https://omniloy.mintlify.app/en). Falls back to `handleReport` when the modal is disabled |
 | `updateTemplate`    | `() => Record<string, unknown> \| null \| undefined \| Promise<…>` | Returns existing EMR content keyed by template property id so regeneration integrates it. See [Pre-fill from your EMR](https://omniloy.mintlify.app/en) |
 | `insertionPreviewClassNames` | `Record<string, string>`                          | Optional class-name overrides for the insertion preview modal (shadow DOM) |
+
+New in SDK 1.0.9:
+
+| Property            | Signature                                                  | Description                          |
+|---------------------|------------------------------------------------------------|--------------------------------------|
+| `handleExtras`      | `(extras: Array<Record<string, unknown>>) => void`         | Receives the extracted items when the user clicks an extras category button. Items arrive exactly as the `template-extras` schema produced them — no field remapping |
 
 ## Development Features
 

@@ -208,7 +208,7 @@
       </div>
 
       <!-- Report Data -->
-      <div class="control-group" ng-show="lastReport || retrievedReport">
+      <div class="control-group" ng-show="lastReport || retrievedReport || lastExtras">
         <h3>Report Data</h3>
 
         <div ng-show="lastReport" class="data-section">
@@ -223,6 +223,11 @@
 
         <div ng-show="retrievedReport === 'Loading...'" class="data-section">
           Loading report...
+        </div>
+
+        <div ng-show="lastExtras" class="data-section">
+          <h4>Extras (handleExtras):</h4>
+          <pre class="json-display">{{lastExtras | json}}</pre>
         </div>
       </div>
     </div>
