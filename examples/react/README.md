@@ -49,7 +49,7 @@ Import `Omniscribe` from `@omniloy/sofia-sdk/react` and pass props directly — 
 
 ```tsx
 import { useState } from 'react';
-import { Omniscribe, LanguageCode } from '@omniloy/sofia-sdk/react';
+import { Omniscribe, LanguageCode, type SdkEventSubscription } from '@omniloy/sofia-sdk/react';
 import '@omniloy/sofia-sdk/react/index.css';
 
 function MyComponent() {

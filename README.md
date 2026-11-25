@@ -235,7 +235,7 @@ npm install @omniloy/sofia-sdk
 <script src="https://unpkg.com/@omniloy/sofia-sdk@1.1.1/dist/webcomponents.umd.js"></script>
 ```
 
-> **Always pin an exact version** (in the script URL or in `package.json`), never `@latest`: with `@latest` every release reaches your users the moment it is published. Upgrade by changing the version after testing it.
+> **Always pin an exact version in the CDN script URL**, never `@latest`: with `@latest` every release reaches your users the moment it is published. Upgrade by changing the version after testing it. With npm, commit your lockfile — it is what keeps the installed version fixed until you upgrade.
 
 ## Troubleshooting
 
