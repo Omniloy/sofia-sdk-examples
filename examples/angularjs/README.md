@@ -29,6 +29,8 @@ Edit `src/assets/environment.json`:
   "userId": "YOUR_DEFAULT_USER_ID",
   "patientId": "YOUR_DEFAULT_PATIENT_ID",
   "templateId": "YOUR_TEMPLATE_ID",
+  "userMedicalSpecialty": "",
+  "hisVersion": "",
   "language": "es",
   "isOpen": true,
   "debug": true
@@ -48,13 +50,15 @@ Navigate to `http://localhost:8000`.
 
 ## SDK Loading
 
-The SofIA SDK is loaded via CDN in `src/index.html` (pinned to v1.0.9) before AngularJS so that the `<sofia-sdk>` custom element is registered when Angular compiles the template:
+The SofIA SDK is loaded via CDN in `src/index.html` (pinned to v1.1.1) before AngularJS so that the `<sofia-sdk>` custom element is registered when Angular compiles the template:
 
 ```html
-<script src="https://unpkg.com/@omniloy/sofia-sdk@1.0.9/dist/webcomponents.umd.js"></script>
+<script src="https://unpkg.com/@omniloy/sofia-sdk@1.1.1/dist/webcomponents.umd.js"></script>
 ```
 
-The AngularJS and angular-route CDN scripts use Subresource Integrity (SRI) hashes. The SofIA SDK script is version-pinned; pin it to an exact version (not `@latest`) in production.
+The AngularJS and angular-route CDN scripts use Subresource Integrity (SRI) hashes. The SofIA SDK script is version-pinned; always pin it to an exact version (never `@latest`) so a new release only reaches your users after you have tested it.
+
+Nothing is installed from npm at runtime: `npm install` only brings `http-server` to serve the static files.
 
 ## SDK Attributes
 
@@ -68,12 +72,14 @@ The `<sofia-sdk>` element accepts the following attributes:
 | `apikey`               | API key for authentication (provided by Omniloy) |
 | `baseurl`              | Base URL of the SofIA API — **optional**, only for legacy keys   |
 | `isopen`               | Whether the widget starts open                                   |
-| `language`             | Interface language (e.g., `es`)                                  |
+| `language`             | Interface language code (e.g., `es`, `en_US`, `en_GB`, `pt_BR`); unsupported values are ignored |
 | `template`             | JSON string with the template schema                             |
 | `patientdata`          | JSON string with patient context                                 |
 | `debug`                | Enable debug mode (console output)                               |
 | `usermedicalspecialty` | (1.0.9+) Doctor's specialty, attached to tracked events — optional |
 | `template-extras`      | (1.0.9+) JSON Schema defining per-category extras action buttons (requires `handleExtras`) |
+| `event-subscriptions`  | (1.0.11+) JSON array of the events `onEvent` receives (`"recording.*"`, `"*"`, …). Without it no events are delivered |
+| `hisversion`           | (1.0.13+) Version of your HIS/EMR, sent as the `x-his-version` header — optional |
 
 ## Minimal Integration
 
@@ -82,7 +88,7 @@ Copy-paste this to integrate the Sofia SDK into any AngularJS project. See the c
 **1. Load the SDK** via CDN in your HTML (before AngularJS):
 
 ```html
-<script src="https://unpkg.com/@omniloy/sofia-sdk@1.0.9/dist/webcomponents.umd.js"></script>
+<script src="https://unpkg.com/@omniloy/sofia-sdk@1.1.1/dist/webcomponents.umd.js"></script>
 ```
 
 **2. Add the component** in your template:
@@ -178,14 +184,42 @@ component.handleExtras = function(extras) {
 
 v1.0.9 also adds the optional `usermedicalspecialty` attribute (all-lowercase — the camelCase `userMedicalSpecialty` from v1.0.8 was renamed and is now silently ignored).
 
+## Activity events (v1.0.11+)
+
+`onEvent` receives typed, PHI-free events about what happens inside the widget. Subscription is explicit — without the `event-subscriptions` attribute nothing is delivered (see `window.EventSubscriptions` in `src/assets/template.js`):
+
+```javascript
+component.setAttribute('event-subscriptions', JSON.stringify(['recording.*', 'report.*'])); // or ['*']
+
+component.onEvent = function(event) {
+  if (event.name === 'recording.heartbeat') session.keepAlive(); // every ~30s while audio flows
+  $scope.$evalAsync(function() { $scope.lastSdkEvent = event; });
+};
+```
+
+Event families: `recording` (`started`, `stopped`, `audio_lost`, `microphone_disconnected`, `heartbeat`), `activity` (`interaction`, `typing`), `report` (`generation_started`, `settled`) and `lifecycle` (`ready`, `closed`). Each event carries `{ name, family, level, ts, seq, sdkVersion, sessionId, payload }`; payloads hold only enums, booleans and numbers — never clinical text or identifiers. Typical use: drive your inactivity timeout, and never close the widget between `report.generation_started` and `report.settled`.
+
+The optional `hisversion` attribute (v1.0.13+) sends the version of your HIS/EMR as the `x-his-version` header on every request.
+
+## Consent, Minors and the Note Confirmation Pop-up
+
+Three behaviours are enabled per API key by Omniloy and driven by `patientdata` — no extra props:
+
+- **Consent indicator** — `patientdata.signedConsent` (`{ signed, date, aiUse? }`) shows a *Signed / Unsigned consent* badge in the SDK header; `aiUse: 'refused'` blocks recording and report generation.
+- **Under-age patients** — the SDK computes the age from `patientdata.birthDate` (prefer ISO `YYYY-MM-DD`) and, depending on the policy configured for your key, shows a **warning**, asks the doctor to **confirm**, or **blocks** recording and report generation.
+- **Note confirmation pop-up (insertion preview)** — the doctor reviews and curates the generated note before it reaches your app; the result arrives via `onReportApply` instead of `handleReport`.
+
+Full details in the [root README](../../README.md#compliance-features-driven-by-patient-data). The sample patient data in this example includes `signedConsent` so you can see the indicator once it is enabled for your key.
+
 ## Features
 
 - **Template editor** -- edit the template schema JSON live with validation.
 - **Template ID** -- change the active template ID at runtime.
 - **Patient data editor** -- modify patient context on the fly.
 - **Debug toggle** -- enable verbose console output from the SDK.
-- **Runtime controls** -- open/close the widget, fetch reports, and reload the component.
-- **State monitor** -- view component mount status, SDK state, and event counts.
+- **Runtime controls** -- open/close the widget and fetch the last report.
+- **State monitor** -- view component mount status, SDK state, reports received and SDK event count.
+- **SDK events** -- live log of the activity events delivered to `onEvent`.
 
 ## Project Structure
 
@@ -200,7 +234,7 @@ src/
   assets/
     environment.json              # Runtime configuration (gitignored)
     environment.example.json      # Configuration template
-    template.js                   # Default template schema
+    template.js                   # Default template, extras schema and event subscriptions
     logo.svg                      # Omniloy logo
   index.html                      # Entry point with CDN script
   index.css                       # Styles

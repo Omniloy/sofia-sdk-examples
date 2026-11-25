@@ -71,11 +71,18 @@ function MyComponent() {
       updateTemplate={() => ({ reason_for_consultation: 'From my EMR form' })}
       templateExtras={myTemplateExtras}
       handleExtras={(extras) => console.log('Extras:', extras)}
+      eventSubscriptions={EVENT_SUBSCRIPTIONS}
+      onEvent={(event) => console.log('SDK event:', event.name, event.payload)}
       language={LanguageCode.es}
     />
   );
 }
+
+// Module-level constant so the prop keeps a stable identity across renders
+const EVENT_SUBSCRIPTIONS: SdkEventSubscription[] = ['recording.*', 'report.*']; // or ['*']
 ```
+
+Types such as `SdkEvent`, `SdkEventSubscription` and `OmniscribeProps` are exported from `@omniloy/sofia-sdk/react`.
 
 > If Omniloy tells you your key needs a base URL, add `baseurl="https://api.example.com/v1"`.
 
@@ -106,6 +113,8 @@ import '@omniloy/sofia-sdk/react/index.css';
   updateTemplate={handleUpdateTemplate}
   insertionPreviewClassNames={{ panel: 'sofia-preview-panel' }}
   setGetLastReport={handleSetGetLastReport}
+  onEvent={handleSdkEvent}
+  eventSubscriptions={EVENT_SUBSCRIPTIONS}
   language={LanguageCode.es}
   debug={debug}
 />
@@ -141,12 +150,14 @@ const handleSetGetLastReport = useCallback((fn: () => Promise<unknown>) => {
 |----------------------------|--------------|-------------------------------------------------------------------|
 | `baseurl`                  | string       | SofIA API endpoint. Optional for some keys; Omniloy tells you if yours needs it |
 | `isopen`                   | boolean      | Show/hide component                                               |
-| `language`                 | LanguageCode | Interface language (e.g., `LanguageCode.es`)                      |
+| `language`                 | LanguageCode | Interface language (e.g., `LanguageCode.es`, `LanguageCode.en_US`) |
 | `debug`                    | boolean      | Enable debug logging                                              |
 | `patientdata`              | object       | Patient information (see below)                                   |
 | `insertionPreviewClassNames` | object     | Class-name overrides for the insertion preview modal (keys: `backdrop`, `panel`, `header`, `body`, `footer`, `group`, `row`, `gapRow`, `applyButton`, `cancelButton`) |
 | `usermedicalspecialty`     | string       | (1.0.9+) Doctor's specialty, attached to tracked events for analytics. **All-lowercase** — the camelCase `userMedicalSpecialty` from 1.0.8 was renamed and is silently ignored |
 | `templateExtras`           | object       | (1.0.9+) JSON Schema whose top-level properties define per-category extras action buttons (requires `handleExtras`) |
+| `eventSubscriptions`       | `SdkEventSubscription[]` | (1.0.11+) Which events `onEvent` receives: exact names (`'recording.started'`), family wildcards (`'recording.*'`) or `'*'`. Without it no events are delivered |
+| `hisversion`               | string       | (1.0.13+) Version of your HIS/EMR, sent as the `x-his-version` header. Printable ASCII, max 64 characters |
 
 > **`wssurl` is deprecated and ignored** since SDK 1.0.7 — the transcription WebSocket URL is provided by the settings API. Don't pass it.
 
@@ -161,6 +172,10 @@ const handleSetGetLastReport = useCallback((fn: () => Promise<unknown>) => {
 | `setGetLastReport`  | `(fn: () => Promise<unknown>) => void`                     | Exposes async function for last report |
 | `handleExtras`      | `(extras: Array<Record<string, unknown>>) => void`         | (1.0.9+) Receives the extracted items when the user clicks an extras category button. Items arrive exactly as the `templateExtras` schema produced them — no field remapping |
 
+| `onEvent`           | `(event: SdkEvent) => void`                                | (1.0.11+) Activity stream filtered by `eventSubscriptions`. Event families: `recording` (`started`, `stopped`, `audio_lost`, `microphone_disconnected`, `heartbeat`), `activity` (`interaction`, `typing`), `report` (`generation_started`, `settled`) and `lifecycle` (`ready`, `closed`). Each event carries `{ name, family, level, ts, seq, sdkVersion, sessionId, payload }`; payloads hold only enums, booleans and numbers — never clinical text or identifiers. |
+
+> **Inactivity timeouts:** keep your session alive on `recording.heartbeat` (emitted every ~30s while audio is actually flowing), and never close the widget between `report.generation_started` and `report.settled`.
+
 ## Patient Data Structure
 
 The `patientdata` prop accepts the following structure:
@@ -172,9 +187,12 @@ type TPatientData = {
   phone: string | undefined;
   address: string | undefined;
   extraData: Record<string, unknown> | undefined;
-  signedConsent?: { signed: boolean; date: string };
+  // `aiUse` (SDK 1.0.10+): only 'refused' blocks recording and report generation
+  signedConsent?: { signed: boolean; date: string; aiUse?: 'accepted' | 'refused' | 'pending' };
 };
 ```
+
+`birthDate` also drives the under-age rule and `signedConsent` the consent indicator — see [Consent, Minors and the Note Confirmation Pop-up](#consent-minors-and-the-note-confirmation-pop-up).
 
 ### `extraData` fields
 
@@ -215,10 +233,21 @@ const patientData = {
 };
 ```
 
+## Consent, Minors and the Note Confirmation Pop-up
+
+Three behaviours are enabled per API key by Omniloy and driven by `patientdata` — no extra props:
+
+- **Consent indicator** — `patientdata.signedConsent` (`{ signed, date, aiUse? }`) shows a *Signed / Unsigned consent* badge in the SDK header; `aiUse: 'refused'` blocks recording and report generation.
+- **Under-age patients** — the SDK computes the age from `patientdata.birthDate` (prefer ISO `YYYY-MM-DD`) and, depending on the policy configured for your key, shows a **warning**, asks the doctor to **confirm**, or **blocks** recording and report generation.
+- **Note confirmation pop-up (insertion preview)** — the doctor reviews and curates the generated note before it reaches your app; the result arrives via `onReportApply` instead of `handleReport`.
+
+Full details in the [root README](../../README.md#compliance-features-driven-by-patient-data). The sample patient data in this example includes `signedConsent` so you can see the indicator once it is enabled for your key.
+
 ## Development Features
 
 - **Runtime Controls**: Open/Close SDK, get reports
-- **State Monitor**: Real-time SDK state and event tracking
+- **State Monitor**: Real-time SDK state, reports received and SDK event count
+- **SDK Events**: Live log of the activity events delivered to `onEvent`
 - **Template Editor**: Live JSON editing with validation
 - **Template ID Input**: Set the template identifier
 - **User ID / Patient ID Inputs**: Change session identifiers at runtime

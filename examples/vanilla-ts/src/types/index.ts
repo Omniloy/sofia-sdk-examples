@@ -10,6 +10,26 @@ export interface AppConfig {
   patientData?: PatientData;
   /** Optional (SDK 1.0.9+). Doctor's medical specialty, attached to tracked events for analytics. */
   userMedicalSpecialty?: string;
+  /** Optional (SDK 1.0.13+). Version of your HIS/EMR, sent as the `x-his-version` header. */
+  hisVersion?: string;
+}
+
+/**
+ * Activity event delivered to `onEvent` (SDK 1.0.11+). Payloads are PHI-free:
+ * only enums, booleans and numbers — never clinical text or identifiers.
+ */
+export interface SdkEvent {
+  /** e.g. 'recording.started', 'report.settled', 'activity.typing' */
+  name: string;
+  family: 'recording' | 'activity' | 'report' | 'lifecycle';
+  level: 'info' | 'warn' | 'error';
+  /** ISO-8601 timestamp */
+  ts: string;
+  /** Monotonic per page load */
+  seq: number;
+  sdkVersion: string;
+  sessionId: string | null;
+  payload: Record<string, unknown>;
 }
 
 export interface PatientData {
@@ -18,6 +38,15 @@ export interface PatientData {
   birthDate: string;
   phone: string;
   address: string;
+  /**
+   * Drives the consent indicator in the SDK header (enabled per API key by
+   * Omniloy). `aiUse: 'refused'` (SDK 1.0.10+) blocks recording and reports.
+   */
+  signedConsent?: {
+    signed: boolean;
+    date: string;
+    aiUse?: 'accepted' | 'refused' | 'pending';
+  };
 }
 
 declare global {
@@ -40,6 +69,8 @@ declare global {
       // Extras (SDK 1.0.9) — per-category action buttons; receives the extracted
       // items for the clicked category exactly as the schema produced them
       handleExtras: (extras: Array<Record<string, unknown>>) => void;
+      // Activity stream (SDK 1.0.11+) — only delivers what `event-subscriptions` asks for
+      onEvent: (event: SdkEvent) => void;
     };
   }
 }

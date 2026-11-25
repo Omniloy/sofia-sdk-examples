@@ -1,6 +1,11 @@
 import { useCallback, useState } from 'react';
-import { DEFAULT_PATIENT_DATA, TEMPLATE_CONFIG, TEMPLATE_EXTRAS_CONFIG } from './utils/config.ts';
-import { LanguageCode, Omniscribe } from '@omniloy/sofia-sdk/react';
+import {
+  DEFAULT_PATIENT_DATA,
+  EVENT_SUBSCRIPTIONS,
+  TEMPLATE_CONFIG,
+  TEMPLATE_EXTRAS_CONFIG,
+} from './utils/config.ts';
+import { LanguageCode, Omniscribe, type SdkEvent } from '@omniloy/sofia-sdk/react';
 import '@omniloy/sofia-sdk/react/index.css';
 
 const config = {
@@ -9,7 +14,12 @@ const config = {
   apiKey: import.meta.env.VITE_API_KEY,
   // Optional (SDK 1.0.9+) — doctor's specialty, attached to tracked events for analytics.
   userMedicalSpecialty: import.meta.env.VITE_USER_MEDICAL_SPECIALTY,
+  // Optional (SDK 1.0.13+) — version of your HIS/EMR, sent as the `x-his-version` header.
+  hisVersion: import.meta.env.VITE_HIS_VERSION,
 };
+
+// How many SDK events the dev console keeps on screen.
+const MAX_EVENT_LOG = 50;
 
 function App() {
   // SDK state
@@ -20,6 +30,8 @@ function App() {
   const [retrievedReportData, setRetrievedReportData] = useState<unknown>(null);
   const [extrasData, setExtrasData] = useState<unknown>(null);
   const [getLastReportFn, setGetLastReportFn] = useState<(() => Promise<unknown>) | null>(null);
+  const [sdkEvents, setSdkEvents] = useState<SdkEvent[]>([]);
+  const [sdkEventCount, setSdkEventCount] = useState(0);
 
   // Configuration
   const [debug, setDebug] = useState(import.meta.env.VITE_DEBUG === 'true');
@@ -81,6 +93,17 @@ function App() {
   // a real EMR would map them to orders/bookings; the dev console just displays them.
   const handleExtras = useCallback((extras: Array<Record<string, unknown>>) => {
     setExtrasData(extras);
+  }, []);
+
+  // Activity stream (SDK 1.0.11+): typed, PHI-free events about what is happening
+  // inside the widget, filtered by the `eventSubscriptions` prop. A real host uses
+  // them to drive an inactivity timeout, e.g. keep the session alive on
+  // 'recording.heartbeat' (every ~30s while audio flows) and never close the widget
+  // between 'report.generation_started' and 'report.settled'. The dev console just
+  // logs them.
+  const handleSdkEvent = useCallback((event: SdkEvent) => {
+    setSdkEventCount((prev) => prev + 1);
+    setSdkEvents((prev) => [event, ...prev].slice(0, MAX_EVENT_LOG));
   }, []);
 
   // Get last report
@@ -200,6 +223,7 @@ function App() {
           template={template}
           templateExtras={TEMPLATE_EXTRAS_CONFIG}
           usermedicalspecialty={config.userMedicalSpecialty || undefined}
+          hisversion={config.hisVersion || undefined}
           patientdata={patientData}
           isopen={isOpen}
           setIsOpen={setIsOpen}
@@ -209,7 +233,9 @@ function App() {
           updateTemplate={handleUpdateTemplate}
           insertionPreviewClassNames={{ panel: 'sofia-preview-panel' }}
           setGetLastReport={handleSetGetLastReport}
-          debug={debug ?? undefined}
+          onEvent={handleSdkEvent}
+          eventSubscriptions={EVENT_SUBSCRIPTIONS}
+          debug={debug}
           language={LanguageCode.es}
         />
       </div>
@@ -254,8 +280,12 @@ function App() {
                 </span>
               </div>
               <div className="status-item">
-                <span className="status-label">Event Count:</span>
+                <span className="status-label">Reports Received:</span>
                 <span className="status-value neutral">{reports.length}</span>
+              </div>
+              <div className="status-item">
+                <span className="status-label">SDK Events:</span>
+                <span className="status-value neutral">{sdkEventCount}</span>
               </div>
             </div>
           </div>
@@ -462,6 +492,31 @@ function App() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* SDK Events (onEvent) */}
+          <div className="control-group">
+            <div className="tools-args-header">
+              <h3>SDK Events (onEvent)</h3>
+              <div className="tools-args-controls">
+                <button
+                  className="btn btn-outline"
+                  onClick={() => {
+                    setSdkEvents([]);
+                    setSdkEventCount(0);
+                  }}
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+            <pre className="json-display">
+              {sdkEvents.length
+                ? sdkEvents
+                    .map((e) => `${new Date(e.ts).toLocaleTimeString()}  ${e.name}  ${JSON.stringify(e.payload)}`)
+                    .join('\n')
+                : 'No events yet — start a recording or type in the chat.'}
+            </pre>
           </div>
 
           {/* Report Data */}

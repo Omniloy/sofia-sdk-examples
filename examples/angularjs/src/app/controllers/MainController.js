@@ -13,19 +13,30 @@ angular.module('myApp').controller('MainController', [
       fullName: 'John Doe',
       birthDate: '01/15/1980',
       phone: '+1 555-123-4567',
-      address: '123 Main St, Example City, USA'
+      address: '123 Main St, Example City, USA',
+      // Drives the consent indicator in the SDK header (enabled per API key by Omniloy)
+      signedConsent: {
+        signed: true,
+        date: '2025-03-01'
+      }
     };
+
+    // How many SDK events the dev console keeps on screen.
+    const MAX_EVENT_LOG = 50;
 
     // Initialize scope variables
     $scope.componentInitialized = false;
     $scope.getLastReportFn = null;
     $scope.reports = [];
-    var eventListeners = [];
+    $scope.sdkEvents = [];
+    $scope.sdkEventCount = 0;
+    $scope.sdkEventsLog = '';
 
     // Configuration with defaults
     $scope.debug = false;
     $scope.templateObject = window.Template || {};
     $scope.templateExtrasObject = window.TemplateExtras || {};
+    $scope.eventSubscriptions = window.EventSubscriptions || [];
     $scope.patientData = DEFAULT_PATIENT_DATA;
     $scope.lastExtras = null;
 
@@ -111,12 +122,9 @@ angular.module('myApp').controller('MainController', [
      */
     $scope.toggleIsOpen = function() {
       $scope.isOpen = !$scope.isOpen;
-      var component = document.getElementById('sofia-component');
+      const component = document.getElementById('sofia-component');
       if (component) {
         component.setAttribute('isopen', $scope.isOpen ? 'true' : 'false');
-        if (typeof component.setIsOpen === 'function') {
-          component.setIsOpen($scope.isOpen);
-        }
       }
     };
 
@@ -130,7 +138,28 @@ angular.module('myApp').controller('MainController', [
       }
     };
 
+    /**
+     * Handle activity events from the component (onEvent)
+     * @param {Object} event - PHI-free SDK event: { name, family, level, ts, seq, payload, ... }
+     */
+    $scope.handleSdkEvent = function(event) {
+      $scope.$evalAsync(function() {
+        $scope.sdkEventCount += 1;
+        $scope.sdkEvents = [event].concat($scope.sdkEvents).slice(0, MAX_EVENT_LOG);
+        $scope.sdkEventsLog = $scope.sdkEvents.map(function(e) {
+          return new Date(e.ts).toLocaleTimeString() + '  ' + e.name + '  ' + JSON.stringify(e.payload);
+        }).join('\n');
+      });
+    };
 
+    /**
+     * Clear the SDK events log
+     */
+    $scope.clearSdkEvents = function() {
+      $scope.sdkEvents = [];
+      $scope.sdkEventCount = 0;
+      $scope.sdkEventsLog = '';
+    };
 
     // =============================================================================
     // DEBUG TOGGLE METHOD
@@ -172,12 +201,9 @@ angular.module('myApp').controller('MainController', [
      * Toggle Template editor
      */
     $scope.toggleTemplateEditor = function() {
-      if ($scope.isEditingTemplate) {
-        $scope.templateString = JSON.stringify($scope.templateObject, null, 2); // Reset on cancel
-        $scope.templateError = '';
-      } else {
-        $scope.templateString = JSON.stringify($scope.templateObject, null, 2); // Initialize
-      }
+      // Entering or cancelling: start again from the applied template
+      $scope.templateString = JSON.stringify($scope.templateObject, null, 2);
+      $scope.templateError = '';
       $scope.isEditingTemplate = !$scope.isEditingTemplate;
     };
 
@@ -227,12 +253,9 @@ angular.module('myApp').controller('MainController', [
      * Toggle Patient Data editor
      */
     $scope.togglePatientDataEditor = function() {
-      if ($scope.isEditingPatientData) {
-        $scope.patientDataString = JSON.stringify($scope.patientData, null, 2); // Reset on cancel
-        $scope.patientDataError = '';
-      } else {
-        $scope.patientDataString = JSON.stringify($scope.patientData, null, 2); // Initialize
-      }
+      // Entering or cancelling: start again from the applied patient data
+      $scope.patientDataString = JSON.stringify($scope.patientData, null, 2);
+      $scope.patientDataError = '';
       $scope.isEditingPatientData = !$scope.isEditingPatientData;
     };
 
@@ -321,6 +344,8 @@ angular.module('myApp').controller('MainController', [
       $scope.debug = config.debug ?? false;
       // Optional (SDK 1.0.9+) — attached to tracked events for analytics
       $scope.userMedicalSpecialty = config.userMedicalSpecialty || '';
+      // Optional (SDK 1.0.13+) — version of your HIS/EMR, sent as the x-his-version header
+      $scope.hisVersion = config.hisVersion || '';
 
       if (config.patientData) {
         $scope.patientData = { ...DEFAULT_PATIENT_DATA, ...config.patientData };
@@ -394,6 +419,10 @@ angular.module('myApp').controller('MainController', [
       if ($scope.userMedicalSpecialty) {
         component.setAttribute('usermedicalspecialty', $scope.userMedicalSpecialty);
       }
+      // Version of your HIS/EMR (SDK 1.0.13+) — optional
+      if ($scope.hisVersion) {
+        component.setAttribute('hisversion', $scope.hisVersion);
+      }
 
       // Set JSON attributes only if they are valid
       try {
@@ -423,6 +452,13 @@ angular.module('myApp').controller('MainController', [
         if ($scope.debug) console.warn('Error setting template-extras:', e);
       }
 
+      // Activity stream (SDK 1.0.11+) — which events `onEvent` (below) receives:
+      // exact names ('recording.started'), family wildcards ('recording.*') or
+      // '*'. Without a subscription the SDK delivers nothing.
+      if ($scope.eventSubscriptions.length > 0) {
+        component.setAttribute('event-subscriptions', JSON.stringify($scope.eventSubscriptions));
+      }
+
       // 3. Set required callbacks
       component.handleReport = $scope.handleReport;
       component.setIsOpen = function(isOpenOrToggleFunction) {
@@ -435,7 +471,8 @@ angular.module('myApp').controller('MainController', [
         $scope.setGetLastReport(fn);
       };
 
-      // 4. Optional: insertion preview modal + EMR pre-fill (SDK 1.0.8)
+      // 4. Set optional callbacks
+      // Insertion preview modal + EMR pre-fill (SDK 1.0.8):
       // onReportApply receives the report the doctor curated in the insertion
       // preview modal. The modal only renders when it is enabled for your API
       // key on the backend; otherwise reports arrive via handleReport (above).
@@ -451,8 +488,8 @@ angular.module('myApp').controller('MainController', [
       // Return an object keyed by template property ids (see assets/template.js).
       component.updateTemplate = function() {
         return {
-          reason_for_consultation: $scope.existingReasonForConsultation || '',
-          treatment_plan: $scope.existingTreatmentPlan || ''
+          reason_for_consultation: 'Follow-up for hypertension',
+          treatment_plan: 'Continue current medication; recheck blood pressure in 2 weeks'
         };
       };
 
@@ -469,36 +506,18 @@ angular.module('myApp').controller('MainController', [
         });
       };
 
+      // Activity stream (SDK 1.0.11+): typed, PHI-free events about what is
+      // happening inside the widget. A real host uses them to drive an
+      // inactivity timeout, e.g. keep the session alive on 'recording.heartbeat'
+      // (every ~30s while audio flows) and never close the widget between
+      // 'report.generation_started' and 'report.settled'. The dev console just
+      // logs them.
+      component.onEvent = $scope.handleSdkEvent;
+
       // ===== SDK INTEGRATION END =====
-
-      // Add event listeners with cleanup tracking
-      function addTrackedListener(el, event, handler) {
-        el.addEventListener(event, handler);
-        eventListeners.push({ element: el, event: event, handler: handler });
-      }
-
-      addTrackedListener(component, 'handle-report', function(event) {
-        $scope.handleReport(event.detail);
-      });
-
-      addTrackedListener(component, 'set-is-open', function(event) {
-        $scope.setIsOpen(event.detail);
-      });
-
-      addTrackedListener(component, 'set-get-last-report', function(event) {
-        $scope.setGetLastReport(event.detail);
-      });
 
       $scope.componentInitialized = true;
     }
-
-    // Clean up event listeners when scope is destroyed
-    $scope.$on('$destroy', function() {
-      eventListeners.forEach(function(entry) {
-        entry.element.removeEventListener(entry.event, entry.handler);
-      });
-      eventListeners = [];
-    });
 
     // Load environment configuration
     $http.get('assets/environment.json')

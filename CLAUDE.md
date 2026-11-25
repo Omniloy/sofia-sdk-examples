@@ -26,14 +26,14 @@ Root-level scripts (run from repo root):
 
 ### SDK Integration Pattern
 
-All examples integrate the same `<sofia-sdk>` web component with three different approaches:
+Three examples integrate the `<sofia-sdk>` web component; the React example uses the SDK's React build:
 
 - **vanilla-ts**: ES6 class (`SofIA`) in `src/components/SofIA.ts` manages the component lifecycle. Config loaded via `fetch('/assets/environment.json')` at runtime. Vite bundles the SDK.
-- **angular**: Angular standalone component (`OmniscribeDemoComponent`) in `src/app/sofia.component.ts` with `[attr.*]` bindings. Config imported from `environment.ts`. Angular CLI bundles the SDK.
+- **angular**: Angular standalone component (`OmniscribeDemoComponent`) in `src/app/sofia.component.ts` with `[attr.*]` bindings; callbacks are assigned in `ngAfterViewInit` through a `@ViewChild('sofia')` reference (no `NgZone.run()` — the SDK calls host callbacks back inside Angular's zone). Config imported from `environment.ts`. Angular CLI bundles the SDK.
 
 > **Custom element registration (vanilla-ts & angular):** the SDK package ships `"sideEffects": false`, so a bare `import '@omniloy/sofia-sdk'` gets tree-shaken out of production builds and `<sofia-sdk>` never registers. Both bundled examples import the `SofiaSDK` constructor in their entry point and call `customElements.define('sofia-sdk', SofiaSDK)` behind a `customElements.get` guard. A local `src/sofia-sdk.d.ts` declares the module because the package's root `exports` entry has no `types` condition.
-- **angularjs**: AngularJS controller (`MainController`) in `src/app/controllers/MainController.js` with `$scope` bindings. Config loaded via `$http.get('assets/environment.json')`. SDK loaded from CDN via `<script>` tag (pinned to `@1.0.9`, no bundler). Has a retry mechanism for component initialization (3 attempts).
-- **react**: React 19 functional component (`App`) in `src/App.tsx` with `useRef` and `useEffect`. Config loaded via `fetch('/assets/environment.json')` at runtime. Vite bundles the SDK.
+- **angularjs**: AngularJS controller (`MainController`) in `src/app/controllers/MainController.js` with `$scope` bindings. Config loaded via `$http.get('assets/environment.json')`. SDK loaded from CDN via `<script>` tag (pinned to an exact version — currently `@1.1.1`, never `@latest`; no bundler, and no npm dependency on the SDK: `package.json` only has `http-server`). Has a retry mechanism for component initialization (3 attempts).
+- **react**: React 19 functional component (`App`) in `src/App.tsx` that renders the `<Omniscribe>` React component from `@omniloy/sofia-sdk/react` (plus `@omniloy/sofia-sdk/react/index.css`) with props and `useState`/`useCallback` — no custom element. Config read from `import.meta.env.VITE_*` (`.env`). Vite bundles the SDK.
 
 ### Configuration Flow
 
@@ -41,11 +41,11 @@ Each example follows: load environment config → create `<sofia-sdk>` element �
 
 ### Template Configuration
 
-Template definitions live in separate files (each also exports the extras schema for SDK 1.0.9's per-category action buttons):
-- `examples/vanilla-ts/src/utils/config.ts` — `TEMPLATE_CONFIG` and `TEMPLATE_EXTRAS_CONFIG` constants
-- `examples/angular/src/app/template/Template.ts` — `Template` and `TemplateExtras` exports
-- `examples/angularjs/src/assets/template.js` — global `Template` and `TemplateExtras` objects
-- `examples/react/src/utils/config.ts` — `TEMPLATE_CONFIG` and `TEMPLATE_EXTRAS_CONFIG` constants
+Template definitions live in separate files (each also exports the extras schema for SDK 1.0.9's per-category action buttons and the `onEvent` subscription list):
+- `examples/vanilla-ts/src/utils/config.ts` — `TEMPLATE_CONFIG`, `TEMPLATE_EXTRAS_CONFIG` and `EVENT_SUBSCRIPTIONS` constants
+- `examples/angular/src/app/template/Template.ts` — `Template`, `TemplateExtras` and `EventSubscriptions` exports
+- `examples/angularjs/src/assets/template.js` — global `Template`, `TemplateExtras` and `EventSubscriptions` objects
+- `examples/react/src/utils/config.ts` — `TEMPLATE_CONFIG`, `TEMPLATE_EXTRAS_CONFIG` and `EVENT_SUBSCRIPTIONS` constants
 
 ## SDK Property Naming
 
@@ -53,11 +53,15 @@ HTML attributes are **lowercase** (web component standard):
 - `apikey`, `userid`, `patientid`
 - `baseurl` (optional for some newer keys — the endpoint is resolved automatically since 1.0.8; required otherwise. Omniloy provides the credentials and tells you which)
 - `template`, `templateid`, `patientdata`
-- `isopen`, `language`, `debug`
+- `isopen`, `language` (a language code: `es`, `en_US`, `en_GB`, `pt_BR`… — unsupported values are ignored), `debug`
 - `usermedicalspecialty` (1.0.9+, optional — attached to tracked events for analytics. All-lowercase: the camelCase `userMedicalSpecialty` from 1.0.8 was renamed and is silently ignored)
 - `template-extras` (1.0.9+, optional — JSON Schema for per-category extras action buttons; kebab-case attribute for the camelCase `templateExtras` JS property)
+- `event-subscriptions` (1.0.11+, optional — JSON array of the events `onEvent` receives: exact names, family wildcards like `recording.*`, or `*`; kebab-case attribute for the camelCase `eventSubscriptions` JS property. Without it no events are delivered)
+- `hisversion` (1.0.13+, optional — the integrator's HIS/EMR version, sent as the `x-his-version` header)
 
-Function/JSON props are assigned as **JS properties** on the element (not HTML attributes): `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate`, `insertionPreviewClassNames`, `handleExtras`, `templateExtras`.
+The SDK strips sensitive attributes (`apikey`, `userid`, `patientid`, `patientdata`, `baseurl`, `templateid`, `template`, `template-extras`) from the DOM right after reading them, so never read them back with `getAttribute`.
+
+Function/JSON props are assigned as **JS properties** on the element (not HTML attributes): `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate`, `insertionPreviewClassNames`, `handleExtras`, `templateExtras`, `onEvent`, `eventSubscriptions`.
 
 ## Deprecated Properties
 
@@ -99,15 +103,28 @@ component.insertionPreviewClassNames = { panel: '...' }; // optional modal styli
 // `template-extras` schema (one button per top-level property). Items are
 // delivered exactly as the schema produced them — no field remapping.
 component.handleExtras = (extras) => { /* items for the clicked category */ };
+
+// SDK 1.0.11+ — activity stream: typed, PHI-free events ({ name, family, level,
+// ts, seq, sdkVersion, sessionId, payload }) in four families: recording,
+// activity, report, lifecycle. Only fires for what `event-subscriptions` asks for.
+component.onEvent = (event) => { /* e.g. keep the session alive on 'recording.heartbeat' */ };
 ```
 
-> **The SDK does NOT emit `handle-report` / `set-is-open` / `set-get-last-report` DOM events.** Use the callback **properties** above. The only real DOM event is `sofia:transcriber-url-changed`.
+> **The SDK does NOT emit `handle-report` / `set-is-open` / `set-get-last-report` DOM events.** Use the callback **properties** above. The only real DOM event is `sofia:transcriber-url-changed`. The old `window.omniscribe*` global callbacks were removed from the SDK for security — do not reintroduce them.
 
 ## Template Field Properties
 
 - `isConfigurable` (default: `true`) — controls whether the healthcare professional can edit the generated field
 - `source` — links a field to a **custom master** (a controlled terminology / code catalog) that Omniloy provisions per account. There are no built-in `source` values; contact Omniloy to have a custom master created and receive its `source`. You can also request a terminology (e.g. ICD-10) directly in the field `description`.
 - `mandatory` (custom keyword) — stronger than `required`: the doctor must review/fill it before Apply in the insertion preview modal
+
+## Compliance Features (backend flags, no props)
+
+Enabled per API key by Omniloy via the settings API and driven by `patientdata` — documented in the root README section "Compliance Features Driven by Patient Data":
+
+- **Consent indicator** (`showConsentIndicator` flag) — `patientdata.signedConsent = { signed, date, aiUse? }` renders a header badge; `aiUse: 'refused'` (1.0.10+) blocks recording and report generation.
+- **Minor policy** (`minorPolicy`: `off` | `warn` | `confirm` | `block`, `minorAgeThreshold` default 18; 1.0.10+) — age computed from `patientdata.birthDate` (ISO, `MM/DD/YYYY` or `DD/MM/YYYY`; ambiguous dates resolve to the youngest age; unparseable dates apply no restriction).
+- **Insertion preview** (`showInsertionPreview` flag) — the note confirmation pop-up; curated note arrives via `onReportApply`, otherwise `handleReport`.
 
 ## Environment Configuration
 
@@ -129,12 +146,13 @@ All four examples must share the same visual design and dev console layout:
 1. **Header**: Omniloy logo + "SofIA SDK - [Framework Name]" + link to docs
 2. **Main Area**: `<sofia-sdk>` component
 3. **Dev Console**:
-   - SDK Runtime Controls: Open/Close, Get Last Report, Clear Reports, Reload
-   - SDK State Monitor: Component status, SDK state, report handler, event count
+   - SDK Runtime Controls: Open/Close, Get Last Report
+   - SDK State Monitor: Component status, SDK state, report handler, reports received, SDK events count
    - Template Editor: JSON editor for `template` with validation
    - Template ID: Text input for `templateid`
    - Debug Toggle: Checkbox for `debug` attribute
    - Patient Data Editor: JSON editor for `patientdata` with validation
+   - SDK Events: log of the events delivered to `onEvent` (newest first, capped at 50) with a Clear button
    - Report Display: Shows received reports (including curated reports from `onReportApply` and extras from `handleExtras`)
 
 The dev console does **NOT** include: Title editor (deprecated), Only Chat toggle (deprecated).
@@ -159,6 +177,6 @@ For each example (`vanilla-ts`, `angular`, `angularjs`, `react`):
 5. Environment example file has correct structure
 6. Dev console has: Template editor, Patient Data editor, templateid input, debug toggle
 7. Dev console does NOT have: Title editor, Only Chat toggle
-8. `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate`, `handleExtras` callbacks are correctly wired, and the extras schema is passed via `template-extras` (attribute) / `templateExtras` (React prop)
+8. `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate`, `handleExtras`, `onEvent` callbacks are correctly wired, the extras schema is passed via `template-extras` (attribute) / `templateExtras` (React prop), and the event subscription via `event-subscriptions` / `eventSubscriptions` (a `lifecycle.ready` event shows up in the SDK Events log on load)
 9. No hardcoded API keys or credentials in source
 10. README instructions work end-to-end

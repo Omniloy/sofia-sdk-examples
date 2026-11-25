@@ -1,37 +1,51 @@
 import {
-  Component,
-  OnInit,
-  NgZone,
+  AfterViewInit,
   ChangeDetectorRef,
-  OnDestroy
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ElementRef,
+  ViewChild
 } from '@angular/core';
-import { environment } from '../../environment';
-import { Template, TemplateExtras } from './template/Template';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { JsonPipe, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../environment';
+import { EventSubscriptions, Template, TemplateExtras } from './template/Template';
 
-interface OmniscribeElement extends HTMLElement {
-  handleReport?: (report: any) => void;
+/**
+ * Activity event delivered to `onEvent` (SDK 1.0.11+). Payloads are PHI-free:
+ * only enums, booleans and numbers — never clinical text or identifiers.
+ */
+interface SdkEvent {
+  /** e.g. 'recording.started', 'report.settled', 'activity.typing' */
+  name: string;
+  family: 'recording' | 'activity' | 'report' | 'lifecycle';
+  level: 'info' | 'warn' | 'error';
+  /** ISO-8601 timestamp */
+  ts: string;
+  /** Monotonic per page load */
+  seq: number;
+  sdkVersion: string;
+  sessionId: string | null;
+  payload: Record<string, unknown>;
+}
+
+/** Callback properties the `<sofia-sdk>` element accepts. */
+interface SofiaElement extends HTMLElement {
+  handleReport?: (report: unknown) => void;
+  setIsOpen?: (valueOrFn: boolean | ((prev: boolean) => boolean)) => void;
   setGetLastReport?: (fn: () => Promise<unknown>) => void;
-  setIsOpen?: (valueOrFn: any) => void;
   // v1.0.8 — insertion preview + EMR pre-fill
   onReportApply?: (curated: Record<string, unknown>) => void;
   updateTemplate?: () => Record<string, unknown> | null | undefined | Promise<Record<string, unknown> | null | undefined>;
   insertionPreviewClassNames?: Record<string, string>;
   // v1.0.9 — extras: per-category action buttons
   handleExtras?: (extras: Array<Record<string, unknown>>) => void;
-  [key: string]: any;
+  // v1.0.11 — activity stream
+  onEvent?: (event: SdkEvent) => void;
 }
 
-declare global {
-  interface Window {
-    omniscribeHandleReport?: (report: any) => void;
-    omniscribeSetGetLastReport?: (fn: () => Promise<unknown>) => void;
-    omniscribeSetIsOpen?: (isOpenOrToggleFunction: any) => void;
-    [key: string]: any;
-  }
-}
+// How many SDK events the dev console keeps on screen.
+const MAX_EVENT_LOG = 50;
 
 @Component({
   selector: 'sofia-demo',
@@ -61,15 +75,17 @@ declare global {
       <!-- Minimal template needed to integrate the Sofia SDK web component. -->
       <div class="sofia-wrapper">
         <sofia-sdk
-          id="sofia"
+          #sofia
           [attr.baseurl]="environment.sdk.baseUrl || null"
           [attr.apikey]="environment.sdk.apiKey"
           [attr.userid]="environment.sdk.userId"
           [attr.patientid]="environment.sdk.patientId"
-          [attr.templateid]="_localTemplateId || environment.sdk.templateId"
+          [attr.templateid]="templateId"
           [attr.template]="templateStringValue"
           [attr.template-extras]="templateExtrasString"
           [attr.usermedicalspecialty]="userMedicalSpecialty || null"
+          [attr.hisversion]="hisVersion || null"
+          [attr.event-subscriptions]="eventSubscriptionsString"
           [attr.patientdata]="patientDataString"
           [attr.language]="environment.sdk.language || 'es'"
           [attr.isopen]="isOpen ? 'true' : 'false'"
@@ -79,7 +95,7 @@ declare global {
       </div>
       <!-- ===== SDK INTEGRATION END ===== -->
 
-          <!-- Debug Controls -->
+      <!-- Debug Controls -->
       <div class="debug-section">
         <div class="section-header">
           <h2>SDK Development Console</h2>
@@ -121,8 +137,12 @@ declare global {
                 </span>
               </div>
               <div class="status-item">
-                <span class="status-label">Event Count:</span>
+                <span class="status-label">Reports Received:</span>
                 <span class="status-value neutral">{{ reports.length }}</span>
+              </div>
+              <div class="status-item">
+                <span class="status-label">SDK Events:</span>
+                <span class="status-value neutral">{{ sdkEventCount }}</span>
               </div>
             </div>
           </div>
@@ -141,7 +161,7 @@ declare global {
                   *ngIf="isEditingTemplate"
                   (click)="applyTemplate()"
                   class="btn btn-primary"
-                  [disabled]="templateError">
+                  [disabled]="!!templateError">
                   Apply Changes
                 </button>
               </div>
@@ -153,20 +173,6 @@ declare global {
                 <pre class="json-display">{{ template | json }}</pre>
               </div>
 
-              <div class="tools-args-info">
-                <div class="config-item">
-                  <strong>Title:</strong> {{ template.title || 'Not set' }}
-                </div>
-                <div class="config-item" *ngIf="template.description">
-                  <strong>Description:</strong> {{ template.description }}
-                </div>
-                <div class="config-item" *ngIf="template.type">
-                  <strong>Type:</strong> {{ template.type }}
-                </div>
-                <div class="config-item" *ngIf="template.properties">
-                  <strong>Properties:</strong> {{ getTemplatePropertiesCount() }} defined
-                </div>
-              </div>
             </div>
 
             <!-- Template Editor -->
@@ -200,7 +206,7 @@ declare global {
               <h3>Template ID</h3>
               <div class="tools-args-controls">
                 <button
-                  (click)="updateTemplateIdFromInput()"
+                  (click)="applyTemplateId()"
                   class="btn btn-primary">
                   Apply
                 </button>
@@ -209,13 +215,12 @@ declare global {
             <div class="templateid-section">
               <div class="templateid-preview">
                 <span class="status-label">Current Template ID:</span>
-                <span class="status-value neutral">{{ _localTemplateId || environment.sdk.templateId || 'Not set' }}</span>
+                <span class="status-value neutral">{{ templateId || 'Not set' }}</span>
               </div>
               <div class="templateid-editor">
                 <input
                   type="text"
-                  [value]="_localTemplateId || environment.sdk.templateId"
-                  (input)="updateTemplateId($event)"
+                  [(ngModel)]="templateIdInput"
                   class="title-input"
                   placeholder="Enter template ID..." />
               </div>
@@ -257,7 +262,7 @@ declare global {
                   *ngIf="isEditingPatientData"
                   (click)="applyPatientData()"
                   class="btn btn-primary"
-                  [disabled]="patientDataError">
+                  [disabled]="!!patientDataError">
                   Apply Changes
                 </button>
               </div>
@@ -295,6 +300,19 @@ declare global {
             </div>
           </div>
 
+          <!-- SDK Events (onEvent) -->
+          <div class="control-group">
+            <div class="tools-args-header">
+              <h3>SDK Events (onEvent)</h3>
+              <div class="tools-args-controls">
+                <button (click)="clearSdkEvents()" class="btn btn-outline">
+                  Clear
+                </button>
+              </div>
+            </div>
+            <pre class="json-display">{{ sdkEventsLog }}</pre>
+          </div>
+
           <!-- Report Data -->
           <div class="control-group" *ngIf="lastReportData || retrievedReportData || curatedReportData || lastExtrasData">
             <h3>Report Data</h3>
@@ -310,7 +328,7 @@ declare global {
             </div>
 
             <div *ngIf="retrievedReportData" class="data-section">
-              <h4>Retrieved Report Data:</h4>
+              <h4>Retrieved Report:</h4>
               <pre class="json-display">{{ retrievedReportData | json }}</pre>
             </div>
 
@@ -328,8 +346,9 @@ declare global {
   imports: [NgIf, JsonPipe, FormsModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
+export class OmniscribeDemoComponent implements AfterViewInit {
+  @ViewChild('sofia') private sofia!: ElementRef<SofiaElement>;
 
-export class OmniscribeDemoComponent implements OnInit, OnDestroy {
   environment = environment;
   template: any = Template;
   templateExtras: any = TemplateExtras;
@@ -342,170 +361,79 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
     fullName: 'John Doe',
     birthDate: '01/15/1980',
     phone: '+1 555-123-4567',
-    address: '123 Main St, Example City, USA'
+    address: '123 Main St, Example City, USA',
+    // Drives the consent indicator in the SDK header (enabled per API key by Omniloy)
+    signedConsent: {
+      signed: true,
+      date: '2025-03-01'
+    }
   };
 
   // Component state
-  isOpen: boolean = true;
+  isOpen = true;
   debug: boolean = environment.sdk.debug ?? false;
-  lastReportData: any = null;
-  retrievedReportData: any = null;
-  curatedReportData: any = null;
-  lastExtrasData: any = null;
-  componentInitialized: boolean = false;
-  reports: any[] = [];
-
-  // Template editing
-  isEditingTemplate: boolean = false;
-  templateJsonString: string = '';
-  templateError: string = '';
-
-  // PatientData editing
-  isEditingPatientData: boolean = false;
-  patientDataJsonString: string = '';
-  patientDataError: string = '';
-
-  // Private properties
-  private eventListeners: Array<{element: HTMLElement, event: string, handler: EventListener}> = [];
+  templateId: string = environment.sdk.templateId;
+  componentInitialized = false;
   getLastReportFn: (() => Promise<unknown>) | null = null;
-
-  constructor(private zone: NgZone, private cdr: ChangeDetectorRef) {
-    this.setupGlobalFunctions();
-    this.templateJsonString = JSON.stringify(this.template, null, 2);
-    this.patientDataJsonString = JSON.stringify(this.patientData, null, 2);
-  }
+  reports: unknown[] = [];
+  lastReportData: unknown = null;
+  retrievedReportData: unknown = null;
+  curatedReportData: unknown = null;
+  lastExtrasData: unknown = null;
+  sdkEvents: SdkEvent[] = [];
+  sdkEventCount = 0;
 
   /** Configuration error message, if any */
-  configError: string = '';
+  configError = '';
 
-  ngOnInit() {
+  // Template editing
+  isEditingTemplate = false;
+  templateJsonString = '';
+  templateError = '';
+  templateIdInput: string = environment.sdk.templateId;
+
+  // PatientData editing
+  isEditingPatientData = false;
+  patientDataJsonString = '';
+  patientDataError = '';
+
+  constructor(private cdr: ChangeDetectorRef) {
     this.validateConfig();
-    this.setupComponentWithRetry(5, 300);
   }
 
-  private validateConfig() {
-    const placeholders = ['YOUR_API_KEY', 'YOUR_DEFAULT_USER_ID', 'YOUR_DEFAULT_PATIENT_ID', 'YOUR_TEMPLATE_ID'];
-    const sdk = this.environment.sdk;
-    const invalid = Object.entries(sdk).filter(
-      ([, value]) => typeof value === 'string' && placeholders.includes(value as string)
-    );
-
-    if (invalid.length > 0) {
-      const fields = invalid.map(([key]) => key).join(', ');
-      this.configError = `Placeholder credentials detected for: ${fields}. Copy environment.example.ts to environment.ts and replace placeholder values with your credentials.`;
-      console.error(`⚠️ Sofia SDK Configuration Error: ${this.configError} Contact enrique.alcazar@omniloy.com to obtain credentials.`);
-    }
-  }
-
-  ngOnDestroy() {
-    this.removeAllEventListeners();
-
-    // Clean up MutationObserver
-    const component = document.getElementById('sofia');
-    if (component && (component as any)._mutationObserver) {
-      (component as any)._mutationObserver.disconnect();
-    }
-
-    // Clean up global functions to prevent memory leaks
-    if (window.omniscribeHandleReport)
-      window.omniscribeHandleReport = undefined;
-    if (window.omniscribeSetIsOpen)
-      window.omniscribeSetIsOpen = undefined;
-    if (window.omniscribeSetGetLastReport)
-      window.omniscribeSetGetLastReport = undefined;
-  }
-
-  /**
-   * Sets up global functions that the web component can call
-   */
-  private setupGlobalFunctions() {
-    window.omniscribeHandleReport = (report: any) => {
-      this.zone.run(() => {
-        this.lastReportData = report;
-        this.reports.push(report);
-        this.cdr.detectChanges();
-      });
-    };
-
-    window.omniscribeSetIsOpen = (valueOrFn: any) => {
-      this.zone.run(() => {
-        this.updateIsOpenState(valueOrFn);
-        this.updateComponentAttribute();
-        this.cdr.detectChanges();
-      });
-    };
-
-    window.omniscribeSetGetLastReport = (fn: () => Promise<unknown>) => {
-      this.zone.run(() => {
-        if (typeof fn === 'function') {
-          this.getLastReportFn = fn;
-          this.cdr.detectChanges();
-        } else {
-          console.warn('setGetLastReport expects a function, received:', typeof fn);
-        }
-      });
-    };
-  }
-
-  /**
-   * Attempts to set up the component with retries
-   */
-  private setupComponentWithRetry(maxAttempts: number, baseDelay: number) {
-    let attempts = 0;
-    const trySetup = () => {
-      attempts++;
-      const component = document.getElementById('sofia');
-
-      if (component && !this.componentInitialized) {
-        this.setupOmniscribeComponent(component as OmniscribeElement);
-        return;
-      }
-
-      if (attempts < maxAttempts) {
-        setTimeout(trySetup, baseDelay * attempts);
-      } else {
-        console.error('Failed to initialize Sofia component after ' + maxAttempts + ' attempts');
-      }
-    };
-
-    trySetup();
-  }
-
-  /**
-   * Sets up the Omniscribe component with event listeners and properties
-   */
-  private setupOmniscribeComponent(component: OmniscribeElement) {
+  ngAfterViewInit() {
     // ===== SDK INTEGRATION START =====
-    // Set the three required callbacks on the sofia-sdk element.
+    // Angular templates cannot bind `on*` properties on custom elements, and the
+    // SDK does not emit DOM events for its callbacks, so assign them as JS
+    // properties on the element. The SDK calls them back inside Angular's zone,
+    // so the view updates without NgZone.run().
+    const component = this.sofia.nativeElement;
 
-    // 1. handleReport — receives generated reports
-    component.handleReport = (report: any) => {
-      if (window.omniscribeHandleReport)
-        window.omniscribeHandleReport(report);
+    // 1. handleReport — receives generated reports (fallback delivery when the
+    //    insertion preview modal is off)
+    component.handleReport = (report) => {
+      this.lastReportData = report;
+      this.reports.push(report);
     };
 
-    // 2. setIsOpen — controls widget visibility
-    component.setIsOpen = (valueOrFn: any) => {
-      if (window.omniscribeSetIsOpen)
-        window.omniscribeSetIsOpen(valueOrFn);
+    // 2. setIsOpen — the SDK asks to open/collapse the widget; receives a
+    //    boolean or an updater function. The [attr.isopen] binding reflects it.
+    component.setIsOpen = (valueOrFn) => {
+      this.isOpen = typeof valueOrFn === 'function' ? !!valueOrFn(this.isOpen) : !!valueOrFn;
     };
 
-    // 3. setGetLastReport — exposes async function to retrieve last report
-    component.setGetLastReport = (fn: () => Promise<unknown>) => {
-      if (window.omniscribeSetGetLastReport)
-        window.omniscribeSetGetLastReport(fn);
+    // 3. setGetLastReport — exposes an async function to retrieve the last report
+    component.setGetLastReport = (fn) => {
+      this.getLastReportFn = fn;
     };
 
     // 4. onReportApply (v1.0.8) — receives the curated report when the doctor
     //    clicks Apply in the insertion preview modal. The modal only renders
     //    when it is enabled for your API key on the backend; otherwise reports
     //    arrive via handleReport above.
-    component.onReportApply = (curated: Record<string, unknown>) => {
-      this.zone.run(() => {
-        this.curatedReportData = curated;
-        this.reports.push(curated);
-        this.cdr.detectChanges();
-      });
+    component.onReportApply = (curated) => {
+      this.curatedReportData = curated;
+      this.reports.push(curated);
     };
 
     // 5. updateTemplate (v1.0.8) — hand SofIA whatever the doctor already typed
@@ -524,174 +452,72 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
     //    button (defined by the template-extras attribute). Items arrive exactly
     //    as the schema produced them — a real EMR would map them to
     //    orders/bookings; the dev console just displays them.
-    component.handleExtras = (extras: Array<Record<string, unknown>>) => {
-      this.zone.run(() => {
-        this.lastExtrasData = extras;
-        this.cdr.detectChanges();
-      });
+    component.handleExtras = (extras) => {
+      this.lastExtrasData = extras;
     };
 
+    // 8. onEvent (v1.0.11) — typed, PHI-free activity events, filtered by the
+    //    event-subscriptions attribute. A real host uses them to drive an
+    //    inactivity timeout, e.g. keep the session alive on 'recording.heartbeat'
+    //    (every ~30s while audio flows) and never close the widget between
+    //    'report.generation_started' and 'report.settled'. The dev console just
+    //    logs them.
+    component.onEvent = (event) => {
+      this.sdkEventCount += 1;
+      this.sdkEvents = [event, ...this.sdkEvents].slice(0, MAX_EVENT_LOG);
+    };
     // ===== SDK INTEGRATION END =====
 
-    // Add event listeners for all possible Sofia events
-    this.addEventListenerWithCleanup(component, 'handle-report', (event: any) => {
-      if (window.omniscribeHandleReport)
-        window.omniscribeHandleReport(event.detail);
-    });
-
-    this.addEventListenerWithCleanup(component, 'set-is-open', (event: any) => {
-      if (window.omniscribeSetIsOpen)
-        window.omniscribeSetIsOpen(event.detail);
-    });
-
-    this.addEventListenerWithCleanup(component, 'set-get-last-report', (event: any) => {
-      if (window.omniscribeSetGetLastReport)
-        window.omniscribeSetGetLastReport(event.detail);
-    });
-
-    // Listen for isopen changes from the Sofia component
-    this.addEventListenerWithCleanup(component, 'isopen-changed', (event: any) => {
-      this.zone.run(() => {
-        this.isOpen = !!event.detail;
-        this.cdr.detectChanges();
-      });
-    });
-
-    // Listen for any attribute changes using MutationObserver
-    this.setupMutationObserver(component);
-
     this.componentInitialized = true;
+    // The flag changed after the view was checked; run one more pass.
     this.cdr.detectChanges();
   }
 
-  /**
-   * Sets up a MutationObserver to watch for attribute changes on Sofia component
-   */
-  private setupMutationObserver(component: HTMLElement) {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'isopen') {
-          this.zone.run(() => {
-            const newValue = component.getAttribute('isopen');
-            const newIsOpen = newValue === 'true';
-            if (this.isOpen !== newIsOpen) {
-              this.isOpen = newIsOpen;
-              this.cdr.detectChanges();
-            }
-          });
-        }
-      });
-    });
+  private validateConfig() {
+    const placeholders = ['YOUR_API_KEY', 'YOUR_DEFAULT_USER_ID', 'YOUR_DEFAULT_PATIENT_ID', 'YOUR_TEMPLATE_ID'];
+    const invalid = Object.entries(this.environment.sdk).filter(
+      ([, value]) => typeof value === 'string' && placeholders.includes(value)
+    );
 
-    observer.observe(component, {
-      attributes: true,
-      attributeFilter: ['isopen']
-    });
-
-    // Store observer for cleanup
-    (component as any)._mutationObserver = observer;
-  }
-
-  /**
-   * Updates the isOpen state based on a value or function
-   */
-  private updateIsOpenState(valueOrFn: any) {
-    if (typeof valueOrFn === 'function') {
-      try {
-        this.isOpen = !!valueOrFn(this.isOpen);
-      } catch (err) {
-        this.isOpen = !this.isOpen;
-        console.warn('Error calling isOpen function, defaulting to toggle:', err);
-      }
-    } else {
-      this.isOpen = !!valueOrFn;
+    if (invalid.length > 0) {
+      const fields = invalid.map(([key]) => key).join(', ');
+      this.configError = `Placeholder credentials detected for: ${fields}. Copy environment.example.ts to environment.ts and replace placeholder values with your credentials.`;
+      console.error(`⚠️ Sofia SDK Configuration Error: ${this.configError} Contact enrique.alcazar@omniloy.com to obtain credentials.`);
     }
   }
 
-  /**
-   * Updates the isopen attribute on the component
-   */
-  private updateComponentAttribute() {
-    const component = document.getElementById('sofia');
-    if (component) {
-      component.setAttribute('isopen', this.isOpen ? 'true' : 'false');
-    }
-  }
+  // ===== Dev console actions =====
 
-  /**
-   * Adds an event listener and tracks it for cleanup
-   */
-  private addEventListenerWithCleanup(element: HTMLElement, event: string, handler: EventListener) {
-    element.addEventListener(event, handler);
-    this.eventListeners.push({ element, event, handler });
-  }
-
-  /**
-   * Removes all tracked event listeners
-   */
-  private removeAllEventListeners() {
-    this.eventListeners.forEach(({ element, event, handler }) => {
-      element.removeEventListener(event, handler);
-    });
-    this.eventListeners = [];
-  }
-
-  // Public methods for UI interactions
-
-  /**
-   * Debug function to toggle the isOpen state
-   */
   toggleIsOpen() {
     this.isOpen = !this.isOpen;
-    this.updateComponentAttribute();
   }
 
-  /**
-   * Gets the last report from the registered async function
-   */
   async getLastReport() {
-    if (this.getLastReportFn) {
-      try {
-        const report = await this.getLastReportFn();
-        this.zone.run(() => {
-          this.retrievedReportData = report;
-          this.cdr.detectChanges();
-        });
-      } catch (error) {
-        console.error('Error getting report:', error);
-        this.zone.run(() => {
-          this.retrievedReportData = {
-            error: 'Error getting report',
-            message: error instanceof Error ? error.message : String(error)
-          };
-          this.cdr.detectChanges();
-        });
-      }
-    } else {
-      console.warn('No getLastReport function registered');
+    if (!this.getLastReportFn) return;
+    try {
+      this.retrievedReportData = await this.getLastReportFn();
+    } catch (error) {
+      console.error('Error getting last report:', error);
       this.retrievedReportData = {
-        error: 'No function registered',
-        message: 'El componente Sofia no ha registrado su función getLastReport aún'
+        error: 'Error getting report',
+        message: error instanceof Error ? error.message : String(error)
       };
     }
   }
 
+  clearSdkEvents() {
+    this.sdkEvents = [];
+    this.sdkEventCount = 0;
+  }
 
-  /**
-   * Toggles the template editor
-   */
   toggleTemplateEditor() {
     this.isEditingTemplate = !this.isEditingTemplate;
     if (this.isEditingTemplate) {
-      // Reset to current template when starting to edit
       this.templateJsonString = JSON.stringify(this.template, null, 2);
       this.templateError = '';
     }
   }
 
-  /**
-   * Validates the JSON in the template editor
-   */
   validateTemplateJson() {
     try {
       JSON.parse(this.templateJsonString);
@@ -701,78 +527,30 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Applies the edited template to the component
-   */
+  /** Applies the edited template; the [attr.template] binding pushes it to the SDK. */
   applyTemplate() {
     try {
-      const newTemplate = JSON.parse(this.templateJsonString);
-
-      // Update the template property
-      this.template = newTemplate;
-
-      // Update the component attribute
-      this.updateComponentTemplate();
-
-      // Exit editing mode
+      this.template = JSON.parse(this.templateJsonString);
       this.isEditingTemplate = false;
       this.templateError = '';
-
     } catch (error) {
       this.templateError = error instanceof Error ? error.message : 'Failed to apply template';
-      console.error('Error applying template:', error);
     }
   }
 
-  /**
-   * Updates the template attribute on the Sofia component
-   */
-  private updateComponentTemplate() {
-    const component = document.getElementById('sofia');
-    if (component) {
-      component.setAttribute('template', JSON.stringify(this.template));
-    } else {
-      console.warn('Sofia component not found, could not update template');
-    }
+  applyTemplateId() {
+    const next = this.templateIdInput.trim();
+    if (next) this.templateId = next;
   }
 
-  /**
-   * Updates the templateid attribute on the Sofia component
-   */
-  updateTemplateId(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this._pendingTemplateId = input.value;
-  }
-
-  /**
-   * Applies the pending template ID to the component
-   */
-  _localTemplateId?: string;
-  private _pendingTemplateId?: string;
-
-  updateTemplateIdFromInput() {
-    const component = document.getElementById('sofia');
-    if (component && this._pendingTemplateId !== undefined) {
-      component.setAttribute('templateid', this._pendingTemplateId);
-      this._localTemplateId = this._pendingTemplateId;
-    }
-  }
-
-  /**
-   * Toggles the patientData editor
-   */
   togglePatientDataEditor() {
     this.isEditingPatientData = !this.isEditingPatientData;
     if (this.isEditingPatientData) {
-      // Reset to current patientData when starting to edit
       this.patientDataJsonString = JSON.stringify(this.patientData, null, 2);
       this.patientDataError = '';
     }
   }
 
-  /**
-   * Validates the JSON in the patientData editor
-   */
   validatePatientDataJson() {
     try {
       JSON.parse(this.patientDataJsonString);
@@ -782,42 +560,20 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Applies the edited patientData to the component
-   */
+  /** Applies the edited patient data; the [attr.patientdata] binding pushes it to the SDK. */
   applyPatientData() {
     try {
-      const newPatientData = JSON.parse(this.patientDataJsonString);
-
-      // Update the patientData property
-      this.patientData = newPatientData;
-
-      // Update the component attribute
-      this.updateComponentPatientData();
-
-      // Exit editing mode
+      this.patientData = JSON.parse(this.patientDataJsonString);
       this.isEditingPatientData = false;
       this.patientDataError = '';
-
     } catch (error) {
       this.patientDataError = error instanceof Error ? error.message : 'Failed to apply patient data';
-      console.error('Error applying patientData:', error);
     }
   }
 
-  /**
-   * Updates the patientdata attribute on the Sofia component
-   */
-  private updateComponentPatientData() {
-    const component = document.getElementById('sofia');
-    if (component) {
-      component.setAttribute('patientdata', JSON.stringify(this.patientData));
-    } else {
-      console.warn('Sofia component not found, could not update patientdata');
-    }
-  }
+  // ===== Values bound to <sofia-sdk> attributes =====
+  // JSON props travel as JSON text when set through attributes.
 
-  // Getters for stringified values
   get templateStringValue(): string {
     return JSON.stringify(this.template);
   }
@@ -826,20 +582,35 @@ export class OmniscribeDemoComponent implements OnInit, OnDestroy {
     return JSON.stringify(this.templateExtras);
   }
 
-  // Optional (v1.0.9). Cast keeps compilation working with environment.ts files
-  // that predate the userMedicalSpecialty field.
-  get userMedicalSpecialty(): string {
-    return (this.environment.sdk as { userMedicalSpecialty?: string }).userMedicalSpecialty ?? '';
-  }
-
   get patientDataString(): string {
     return JSON.stringify(this.patientData);
   }
 
+  // Which events onEvent receives (v1.0.11): exact names, family wildcards
+  // ('recording.*') or '*'. Without a subscription the SDK delivers nothing.
+  readonly eventSubscriptionsString = JSON.stringify(EventSubscriptions);
 
-  // Helper methods for UI
-  getTemplatePropertiesCount(): number {
-    return this.template.properties ? Object.keys(this.template.properties).length : 0;
+  // Optional fields. The cast keeps compilation working with environment.ts
+  // files that predate them.
+  private get optionalSdkEnv(): { userMedicalSpecialty?: string; hisVersion?: string } {
+    return this.environment.sdk as { userMedicalSpecialty?: string; hisVersion?: string };
   }
 
+  /** Optional (v1.0.9) — attached to tracked events for analytics. */
+  get userMedicalSpecialty(): string {
+    return this.optionalSdkEnv.userMedicalSpecialty ?? '';
+  }
+
+  /** Optional (v1.0.13) — version of your HIS/EMR, sent as the x-his-version header. */
+  get hisVersion(): string {
+    return this.optionalSdkEnv.hisVersion ?? '';
+  }
+
+  get sdkEventsLog(): string {
+    return this.sdkEvents.length
+      ? this.sdkEvents
+          .map((e) => `${new Date(e.ts).toLocaleTimeString()}  ${e.name}  ${JSON.stringify(e.payload)}`)
+          .join('\n')
+      : 'No events yet — start a recording or type in the chat.';
+  }
 }

@@ -1,4 +1,8 @@
-import { DEFAULT_CONFIG, DEFAULT_PATIENT_DATA, TEMPLATE_CONFIG, TEMPLATE_EXTRAS_CONFIG } from "../utils/config";
+import { DEFAULT_CONFIG, DEFAULT_PATIENT_DATA, EVENT_SUBSCRIPTIONS, TEMPLATE_CONFIG, TEMPLATE_EXTRAS_CONFIG } from "../utils/config";
+import type { SdkEvent } from "../types";
+
+// How many SDK events the dev console keeps on screen.
+const MAX_EVENT_LOG = 50;
 
 export class SofIA {
   // Component state
@@ -10,6 +14,8 @@ export class SofIA {
   private lastReportData: unknown = null;
   private retrievedReportData: unknown = null;
   private lastExtrasData: unknown = null;
+  private sdkEvents: SdkEvent[] = [];
+  private sdkEventCount = 0;
 
   // Configuration state
   private debug = false;
@@ -71,6 +77,8 @@ export class SofIA {
     this.componentInitialized = false;
     this.reports = [];
     this.getLastReportFn = null;
+    this.sdkEvents = [];
+    this.sdkEventCount = 0;
   }
 
   private async loadConfig() {
@@ -89,6 +97,7 @@ export class SofIA {
             userId: envData.sdk.userId || envData.sdk.defaultUserId || this.config.userId,
             templateId: envData.sdk.templateId || this.config.templateId,
             userMedicalSpecialty: envData.sdk.userMedicalSpecialty || this.config.userMedicalSpecialty,
+            hisVersion: envData.sdk.hisVersion || this.config.hisVersion,
             language: envData.sdk.language || this.config.language,
             isOpen: envData.sdk.isOpen ?? this.config.isOpen
           };
@@ -120,6 +129,7 @@ export class SofIA {
     track('apply-patientdata', 'click', () => this.applyPatientData());
     track('patientdata-json-editor', 'input', () => this.validatePatientData());
     track('debug-toggle', 'change', () => this.updateDebug());
+    track('clear-events-btn', 'click', () => this.clearSdkEvents());
   }
 
   private async setupComponent() {
@@ -179,9 +189,20 @@ export class SofIA {
       component.setAttribute('usermedicalspecialty', this.config.userMedicalSpecialty);
     }
 
+    // Version of your HIS/EMR (SDK 1.0.13+) — optional, sent as the `x-his-version`
+    // header so Omniloy can tell which HIS version each API key runs.
+    if (this.config.hisVersion) {
+      component.setAttribute('hisversion', this.config.hisVersion);
+    }
+
     // Extras (SDK 1.0.9) — one action button per category defined in the schema.
     // Requires both this attribute and a wired `handleExtras` callback (below).
     component.setAttribute('template-extras', JSON.stringify(this.templateExtras));
+
+    // Activity stream (SDK 1.0.11+) — which events `onEvent` (below) receives: exact
+    // names ('recording.started'), family wildcards ('recording.*') or '*'.
+    // Without a subscription the SDK delivers nothing.
+    component.setAttribute('event-subscriptions', JSON.stringify(EVENT_SUBSCRIPTIONS));
 
     // 3. Set required callbacks
     component.handleReport = (report: unknown) => {
@@ -202,7 +223,7 @@ export class SofIA {
       this.updateUI();
     };
 
-    // 4. Set new-feature callbacks (SDK 1.0.8+ / 1.0.9)
+    // 4. Set optional callbacks
     // Insertion preview modal: receives the curated report when the doctor clicks Apply.
     // Requires the backend `showInsertionPreview` flag for your API key; falls back to handleReport otherwise.
     component.onReportApply = (curated: unknown) => {
@@ -229,6 +250,17 @@ export class SofIA {
       this.lastExtrasData = extras;
       this.updateUI();
       this.showReportData();
+    };
+
+    // Activity stream (SDK 1.0.11+): typed, PHI-free events about what is happening
+    // inside the widget. A real host uses them to drive an inactivity timeout, e.g.
+    // keep the session alive on 'recording.heartbeat' (every ~30s while audio flows)
+    // and never close the widget between 'report.generation_started' and
+    // 'report.settled'. The dev console just logs them.
+    component.onEvent = (event: SdkEvent) => {
+      this.sdkEventCount += 1;
+      this.sdkEvents = [event, ...this.sdkEvents].slice(0, MAX_EVENT_LOG);
+      this.updateUI();
     };
 
     // 5. Mount the component
@@ -267,6 +299,20 @@ export class SofIA {
     const eventCount = document.getElementById('event-count');
     if (eventCount) {
       eventCount.textContent = this.reports.length.toString();
+    }
+
+    // Update SDK events (onEvent) count and log
+    const sdkEventCount = document.getElementById('sdk-event-count');
+    if (sdkEventCount) {
+      sdkEventCount.textContent = this.sdkEventCount.toString();
+    }
+    const sdkEventsLog = document.getElementById('sdk-events-log');
+    if (sdkEventsLog) {
+      sdkEventsLog.textContent = this.sdkEvents.length
+        ? this.sdkEvents
+            .map((e) => `${new Date(e.ts).toLocaleTimeString()}  ${e.name}  ${JSON.stringify(e.payload)}`)
+            .join('\n')
+        : 'No events yet — start a recording or type in the chat.';
     }
 
     // Update toggle button text
@@ -332,6 +378,11 @@ export class SofIA {
     }
   }
 
+  private clearSdkEvents() {
+    this.sdkEvents = [];
+    this.sdkEventCount = 0;
+    this.updateUI();
+  }
 
   // Debug toggle
   private updateDebug() {
@@ -603,6 +654,7 @@ export class SofIA {
       componentInitialized: this.componentInitialized,
       hasReportHandler: !!this.getLastReportFn,
       reportCount: this.reports.length,
+      sdkEventCount: this.sdkEventCount,
       debug: this.debug
     };
   }
