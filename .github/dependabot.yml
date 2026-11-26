@@ -13,6 +13,12 @@ updates:
     open-pull-requests-limit: 5
 
   - package-ecosystem: "npm"
+    directory: "/examples/react"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "npm"
     directory: "/examples/angularjs"
     schedule:
       interval: "weekly"

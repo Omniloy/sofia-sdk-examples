@@ -34,6 +34,8 @@ cp public/assets/environment.example.json public/assets/environment.json
     "userId": "YOUR_DEFAULT_USER_ID",
     "patientId": "YOUR_DEFAULT_PATIENT_ID",
     "templateId": "YOUR_TEMPLATE_ID",
+    "userMedicalSpecialty": "",
+    "hisVersion": "",
     "language": "es",
     "isOpen": true,
     "debug": true
@@ -59,10 +61,13 @@ Then open: http://localhost:5173
 Copy-paste this snippet to integrate the Sofia SDK into any vanilla TypeScript/JavaScript project. See the code between `SDK INTEGRATION START` and `SDK INTEGRATION END` in `src/components/SofIA.ts` for the full working version.
 
 ```typescript
-import '@omniloy/sofia-sdk';
+import { SofiaSDK } from '@omniloy/sofia-sdk';
 
-// Wait for the custom element to be registered
-await customElements.whenDefined('sofia-sdk');
+// Register the element explicitly — the package ships `sideEffects: false`, so a
+// bare `import '@omniloy/sofia-sdk'` is tree-shaken out of production builds.
+if (!customElements.get('sofia-sdk')) {
+  customElements.define('sofia-sdk', SofiaSDK);
+}
 
 // 1. Create and configure the component
 const component = document.createElement('sofia-sdk');
@@ -110,7 +115,14 @@ component.handleExtras = (extras) => {
   console.log('Extras:', extras);
 };
 
-// 5. Mount the component
+// 5. (SDK 1.0.11+) Activity stream — PHI-free events (recording, activity, report, lifecycle).
+//    Nothing is delivered without an explicit subscription.
+component.setAttribute('event-subscriptions', JSON.stringify(['*']));
+component.onEvent = (event) => {
+  if (event.name === 'recording.heartbeat') keepSessionAlive(); // every ~30s while audio flows
+};
+
+// 6. Mount the component
 document.getElementById('container').appendChild(component);
 ```
 
@@ -181,11 +193,13 @@ container.appendChild(component);
 |------------------------|--------------------------------------------------------------------------------------------|
 | `baseurl`              | SofIA API endpoint. Optional (1.0.8+) for some keys; Omniloy tells you if yours needs it |
 | `isopen`               | Show/hide component (`"true"` / `"false"`)                                                 |
-| `language`             | Interface language (e.g., `"es"`, `"en"`)                                                  |
+| `language`             | Interface language code (e.g., `"es"`, `"en_US"`, `"en_GB"`, `"pt_BR"`); unsupported values are ignored |
 | `debug`                | Enable debug logging (`"true"`)                                                            |
 | `patientdata`          | JSON string with patient information                                                       |
 | `usermedicalspecialty` | (1.0.9+) Doctor's medical specialty, attached to tracked events for analytics segmentation |
 | `template-extras`      | (1.0.9+) JSON Schema whose top-level properties define per-category extras action buttons (requires `handleExtras`) |
+| `event-subscriptions`  | (1.0.11+) JSON array of the events `onEvent` receives: exact names (`"recording.started"`), family wildcards (`"recording.*"`) or `"*"`. Without it no events are delivered |
+| `hisversion`           | (1.0.13+) Version of your HIS/EMR, sent as the `x-his-version` header. Printable ASCII, max 64 characters |
 
 > `wssurl` is **deprecated and ignored** since 1.0.7 — the transcription WebSocket URL is provided by the API. Do not set it.
 
@@ -213,10 +227,27 @@ New in SDK 1.0.9:
 |---------------------|------------------------------------------------------------|--------------------------------------|
 | `handleExtras`      | `(extras: Array<Record<string, unknown>>) => void`         | Receives the extracted items when the user clicks an extras category button. Items arrive exactly as the `template-extras` schema produced them — no field remapping |
 
+New in SDK 1.0.11:
+
+| Property            | Signature                                                  | Description                          |
+|---------------------|------------------------------------------------------------|--------------------------------------|
+| `onEvent`           | `(event: SdkEvent) => void`                                | Activity stream filtered by `event-subscriptions`. Event families: `recording` (`started`, `stopped`, `audio_lost`, `microphone_disconnected`, `heartbeat`), `activity` (`interaction`, `typing`), `report` (`generation_started`, `settled`) and `lifecycle` (`ready`, `closed`). Each event carries `{ name, family, level, ts, seq, sdkVersion, sessionId, payload }`; payloads hold only enums, booleans and numbers — never clinical text or identifiers. |
+
+## Consent, Minors and the Note Confirmation Pop-up
+
+Three behaviours are enabled per API key by Omniloy and driven by `patientdata` — no extra props:
+
+- **Consent indicator** — `patientdata.signedConsent` (`{ signed, date, aiUse? }`) shows a *Signed / Unsigned consent* badge in the SDK header; `aiUse: 'refused'` blocks recording and report generation.
+- **Under-age patients** — the SDK computes the age from `patientdata.birthDate` (prefer ISO `YYYY-MM-DD`) and, depending on the policy configured for your key, shows a **warning**, asks the doctor to **confirm**, or **blocks** recording and report generation.
+- **Note confirmation pop-up (insertion preview)** — the doctor reviews and curates the generated note before it reaches your app; the result arrives via `onReportApply` instead of `handleReport`.
+
+Full details in the [root README](../../README.md#compliance-features-driven-by-patient-data). The sample patient data in this example includes `signedConsent` so you can see the indicator once it is enabled for your key.
+
 ## Development Features
 
-- **Runtime Controls**: Open/Close SDK, get reports, refresh component
-- **State Monitor**: Real-time component status and event tracking
+- **Runtime Controls**: Open/Close SDK, get reports
+- **State Monitor**: Real-time component status, reports received and SDK event count
+- **SDK Events**: Live log of the activity events delivered to `onEvent`
 - **Template Editor**: Live JSON editing with validation
 - **Template ID Input**: Set the template identifier
 - **Debug Toggle**: Enable/disable SDK debug mode
@@ -224,7 +255,7 @@ New in SDK 1.0.9:
 
 ## Key Files
 
-- `src/main.ts` - Entry point, imports SofIA SDK
+- `src/main.ts` - Entry point, registers the `<sofia-sdk>` element
 - `src/components/SofIA.ts` - Complete integration with lifecycle, events & UI controls
 - `src/utils/config.ts` - Default configuration and template
 - `public/assets/environment.json` - Environment configuration (gitignored)
@@ -239,7 +270,8 @@ New in SDK 1.0.9:
 ## Troubleshooting
 
 - **Component not loading**: Ensure SofIA SDK is installed: `npm install @omniloy/sofia-sdk`
-- **Callbacks not firing**: Assign `handleReport`, `setIsOpen`, `setGetLastReport` after creating the component
+- **Callbacks not firing**: Assign them as JS properties on the element (`component.handleReport = …`), not as attributes or DOM event listeners
+- **`onEvent` never fires**: Set the `event-subscriptions` attribute (e.g. `["*"]`) — without it no events are delivered
 - **Boolean attributes**: Must be strings (`"true"` / `"false"`) when using `setAttribute`
 - **No generate button**: Both `template` AND `templateid` must be set for report generation
 

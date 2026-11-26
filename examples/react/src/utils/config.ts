@@ -1,3 +1,5 @@
+import type { SdkEventSubscription } from '@omniloy/sofia-sdk/react';
+
 export const DEFAULT_PATIENT_DATA = {
   fullName: 'John Doe',
   birthDate: '01/15/1980',
@@ -238,6 +240,12 @@ export const TEMPLATE_CONFIG = {
     },
   },
 };
+
+// Which SDK activity events `onEvent` receives (SDK 1.0.11+): exact names
+// ('recording.started'), family wildcards ('recording.*') or '*' for everything.
+// Families: recording, activity, report, lifecycle. Keep this a module-level
+// constant so the prop keeps a stable identity across renders.
+export const EVENT_SUBSCRIPTIONS: SdkEventSubscription[] = ['*'];
 
 // Extras schema (SDK 1.0.9) — each top-level property under `properties` becomes
 // one action button in the SDK chat footer (first two inline, the rest behind an

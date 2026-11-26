@@ -19,8 +19,17 @@ export const DEFAULT_PATIENT_DATA: PatientData = {
   fullName: 'John Doe',
   birthDate: '01/15/1980',
   phone: '+1 555-123-4567',
-  address: '123 Main St, Example City, USA'
+  address: '123 Main St, Example City, USA',
+  signedConsent: {
+    signed: true,
+    date: '2025-03-01'
+  }
 };
+
+// Which SDK activity events `onEvent` receives (SDK 1.0.11+): exact names
+// ('recording.started'), family wildcards ('recording.*') or '*' for everything.
+// Families: recording, activity, report, lifecycle.
+export const EVENT_SUBSCRIPTIONS = ['*'];
 
 // Extras schema (SDK 1.0.9) — each top-level property under `properties` becomes
 // one action button in the SDK chat footer (first two inline, the rest behind an

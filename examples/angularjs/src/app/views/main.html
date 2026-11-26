@@ -64,12 +64,16 @@
           </div>
           <div class="status-item">
             <span class="status-label">Report Handler:</span>
-            <span class="status-value success" ng-show="getLastReportFn">Available</span>
+            <span class="status-value success" ng-show="getLastReportFn">Registered</span>
             <span class="status-value error" ng-show="!getLastReportFn">Not Available</span>
           </div>
           <div class="status-item">
-            <span class="status-label">Event Count:</span>
+            <span class="status-label">Reports Received:</span>
             <span class="status-value neutral">{{reports.length || 0}}</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">SDK Events:</span>
+            <span class="status-value neutral">{{sdkEventCount}}</span>
           </div>
         </div>
       </div>
@@ -80,7 +84,7 @@
           <h3>Template Configuration</h3>
           <div class="tools-args-controls">
             <button type="button" ng-click="toggleTemplateEditor()" class="btn btn-outline">
-              <span ng-show="isEditingTemplate">Cancel</span>
+              <span ng-show="isEditingTemplate">Cancel Edit</span>
               <span ng-show="!isEditingTemplate">Edit Template</span>
             </button>
             <button type="button" ng-show="isEditingTemplate" ng-click="applyTemplate()" ng-disabled="templateError" class="btn btn-primary">
@@ -170,7 +174,7 @@
           <h3>Patient Data Configuration</h3>
           <div class="patient-data-controls">
             <button type="button" ng-click="togglePatientDataEditor()" class="btn btn-outline">
-              <span ng-show="isEditingPatientData">Cancel</span>
+              <span ng-show="isEditingPatientData">Cancel Edit</span>
               <span ng-show="!isEditingPatientData">Edit Patient Data</span>
             </button>
             <button type="button" ng-show="isEditingPatientData" ng-click="applyPatientData()" ng-disabled="patientDataError" class="btn btn-primary">
@@ -205,6 +209,19 @@
             </small>
           </div>
         </div>
+      </div>
+
+      <!-- SDK Events (onEvent) -->
+      <div class="control-group">
+        <div class="tools-args-header">
+          <h3>SDK Events (onEvent)</h3>
+          <div class="tools-args-controls">
+            <button type="button" ng-click="clearSdkEvents()" class="btn btn-outline">
+              Clear
+            </button>
+          </div>
+        </div>
+        <pre class="json-display">{{sdkEventsLog || 'No events yet — start a recording or type in the chat.'}}</pre>
       </div>
 
       <!-- Report Data -->

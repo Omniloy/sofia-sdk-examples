@@ -2,14 +2,14 @@
 # Only Omniloy team members can approve changes
 
 # Global owners - require review from at least one
-* @jordigiam @laupucci @kikoncuo
+* @jordigiam @laupucci @kikoncuo @seralexger
 
 # Specific ownership for critical files
-README.md @jordigiam @laupucci @kikoncuo
-LICENSE @jordigiam @laupucci @kikoncuo
-.github/ @jordigiam @laupucci @kikoncuo
+README.md @jordigiam @laupucci @kikoncuo @seralexger
+LICENSE @jordigiam @laupucci @kikoncuo @seralexger
+.github/ @jordigiam @laupucci @kikoncuo @seralexger
 
 # Example-specific ownership
-/examples/vanilla-ts/ @jordigiam @laupucci @kikoncuo
-/examples/angular/ @jordigiam @laupucci @kikoncuo
-/examples/angularjs/ @jordigiam @laupucci @kikoncuo
+/examples/vanilla-ts/ @jordigiam @laupucci @kikoncuo @seralexger
+/examples/angular/ @jordigiam @laupucci @kikoncuo @seralexger
+/examples/angularjs/ @jordigiam @laupucci @kikoncuo @seralexger

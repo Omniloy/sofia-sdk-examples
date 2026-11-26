@@ -2,7 +2,7 @@
 
 ![Examples](https://img.shields.io/badge/Examples-4-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![SDK Version](https://img.shields.io/badge/SDK-v1.0.9-blue)
+![SDK Version](https://img.shields.io/badge/SDK-v1.1.1-blue)
 
 Quick examples showing how to integrate **Sofia SDK** (`@omniloy/sofia-sdk`) into different web frameworks. Pick your framework and get started in minutes!
 
@@ -104,8 +104,10 @@ Each example has an `.example` file you copy and fill in:
 
   // Optional configuration
   isOpen: true,                          // Show/hide component
-  language: 'en',                        // Interface language
+  language: 'es',                        // Interface language code: es, en_US, en_GB, pt_BR, pt_PT, fr, ca… (unsupported values are ignored)
   debug: true,                           // Enable debug logging
+  userMedicalSpecialty: 'cardiology',    // Doctor's specialty, attached to analytics events (`usermedicalspecialty`)
+  hisVersion: '5.2.1',                   // Your HIS/EMR version, sent as the x-his-version header (`hisversion`)
 }
 ```
 
@@ -155,11 +157,71 @@ component.setAttribute('template-extras', JSON.stringify(templateExtras));
 component.handleExtras = (extras) => {
   console.log('Extras:', extras); // e.g. [{ type: 'laboratory', description: 'Complete blood panel' }]
 };
+
+// SDK 1.0.11+ — activity stream: typed, PHI-free events about what happens inside the widget
+// (recording, user activity, report generation, lifecycle). Subscription is explicit: without
+// `event-subscriptions` (`eventSubscriptions` prop in React) nothing is delivered.
+component.setAttribute('event-subscriptions', JSON.stringify(['recording.*', 'report.*'])); // or ['*']
+component.onEvent = (event) => {
+  if (event.name === 'recording.heartbeat') session.keepAlive(); // every ~30s while audio flows
+};
 ```
+
+> **Activity events (`onEvent`).** Event families: `recording` (`started`, `stopped`, `audio_lost`, `microphone_disconnected`, `heartbeat`), `activity` (`interaction`, `typing`), `report` (`generation_started`, `settled`) and `lifecycle` (`ready`, `closed`). Each event carries `{ name, family, level, ts, seq, sdkVersion, sessionId, payload }`; payloads hold only enums, booleans and numbers — never clinical text or identifiers. Typical use: drive your inactivity timeout — keep the session alive on `recording.heartbeat`, and never close the widget between `report.generation_started` and `report.settled` (generation runs for tens of seconds with no user input).
+
+> **`hisversion` (SDK 1.0.13+):** optional attribute with the version of your HIS/EMR (e.g. `"5.2.1"`), sent as the `x-his-version` header on every request. Printable ASCII only, max 64 characters.
 
 > **New in SDK 1.0.9:** the optional `usermedicalspecialty` attribute attaches the doctor's specialty to tracked events for analytics. Note the all-lowercase name — the camelCase `userMedicalSpecialty` that shipped in 1.0.8 was renamed and is now silently ignored (breaking change for React hosts using the old spelling).
 
 See the [Insertion preview](https://omniloy.mintlify.app/sofia/en/sdk/insertion-preview) and [updateTemplate](https://omniloy.mintlify.app/sofia/en/sdk/update-template) guides for the full flow.
+
+## Compliance Features Driven by Patient Data
+
+Three behaviours are switched on **per API key by Omniloy** (there is no prop for them) and are driven by what you send in `patientdata`. Ask Omniloy to enable them for your key.
+
+```typescript
+patientdata = {
+  fullName: 'John Doe',
+  birthDate: '1980-01-15',          // drives the under-age rule (see below)
+  phone: '+1 555-123-4567',
+  address: '123 Main St, Example City, USA',
+  extraData: { /* free-form clinical context */ },
+  signedConsent: {
+    signed: true,                   // has the patient signed the consent form?
+    date: '2025-03-01',             // shown in the indicator tooltip
+    aiUse: 'accepted',              // optional (SDK 1.0.10+): 'accepted' | 'refused' | 'pending'
+  },
+};
+```
+
+### Consent indicator (`signedConsent`)
+
+When the consent indicator is enabled for your key **and** `patientdata.signedConsent` is present, the SDK header shows a badge:
+
+| `signedConsent` | Badge | Effect |
+|---|---|---|
+| `signed: true` | **Signed consent** | The doctor can record the conversation without mentioning AI during the consultation |
+| `signed: false` | **Unsigned consent** | The tooltip tells the doctor the consultation can be recorded as dictation |
+| `aiUse: 'refused'` | **AI use refused** | **Recording and report generation are blocked** for this consultation (the chat stays available) |
+
+`aiUse` is optional: absent or `'pending'` keeps the normal flow; only an explicit `'refused'` blocks. Without `signedConsent` no badge is shown.
+
+### Under-age patients (block / confirm / warn)
+
+Omniloy configures a minor policy per API key, plus the age threshold (default **18**). The SDK computes the patient's age from `patientdata.birthDate` and applies the policy when the doctor starts a recording or a report:
+
+| Policy | What the doctor sees |
+|---|---|
+| `off` (default) | Nothing — the flow is untouched |
+| `warn` | A notice that the patient is a minor and that using the assistant requires authorisation from the holder of parental authority or legal guardianship. One button to acknowledge, then the action continues |
+| `confirm` | The same notice with **Cancel** and a confirm button — the action only continues if the doctor confirms (the confirmation is audited) |
+| `block` | Recording and report generation are disabled for this patient, with the reason in the tooltip and in the header badge (**Recording blocked**) |
+
+`birthDate` accepts ISO (`1990-01-31`), `MM/DD/YYYY` and `DD/MM/YYYY`. When a numeric date is ambiguous (`03/04/2010`) the SDK takes the reading that gives the **youngest** age, so prefer ISO. If `birthDate` is missing or cannot be parsed (two-digit years, month names, timestamps), no restriction is applied. When several rules apply, the most restrictive one wins — a refused consent or a `block` policy always beats a warning.
+
+### Note confirmation pop-up (insertion preview)
+
+When the insertion preview is enabled for your key (and a `template` is set), a generated note is **not** delivered straight to `handleReport`. Instead the SDK opens a pop-up where the doctor reviews the note, selects/edits the fields to keep (fields marked `mandatory` in the template must be reviewed) and clicks **Apply**. Only then does your app receive the curated note, through **`onReportApply`**. With the feature off, notes keep arriving through `handleReport` — wire both callbacks. Style the pop-up with `insertionPreviewClassNames`, and feed existing EMR content into it with `updateTemplate`.
 
 ## Installation Options
 
@@ -170,18 +232,22 @@ npm install @omniloy/sofia-sdk
 
 ### Option 2: CDN
 ```html
-<script src="https://unpkg.com/@omniloy/sofia-sdk@latest/dist/webcomponents.umd.js"></script>
+<script src="https://unpkg.com/@omniloy/sofia-sdk@1.1.1/dist/webcomponents.umd.js"></script>
 ```
+
+> **Always pin an exact version in the CDN script URL**, never `@latest`: with `@latest` every release reaches your users the moment it is published. Upgrade by changing the version after testing it. With npm, commit your lockfile — it is what keeps the installed version fixed until you upgrade.
 
 ## Troubleshooting
 
 | Problem | Cause | Solution |
 |---|---|---|
 | `Configuration Error` at startup | Placeholder credentials not replaced | Copy the `.example` env file and fill in real credentials (see [Getting Credentials](#getting-credentials)) |
-| Component not loading | SDK not installed or not imported | Run `npm install` and ensure your entry point imports `@omniloy/sofia-sdk` |
+| Component not loading | SDK not installed, or the import was tree-shaken | Run `npm install`. In bundled apps import `SofiaSDK` and call `customElements.define('sofia-sdk', SofiaSDK)` — the package ships `sideEffects: false`, so a bare `import '@omniloy/sofia-sdk'` is dropped from production builds |
 | No generate button | Missing `template` or `templateid` | Both `template` AND `templateid` must be set for report generation |
-| Callbacks not firing | Assigned before element exists | Assign `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate` after the element is in the DOM |
+| Callbacks not firing | Bound as DOM events or HTML attributes | Assign `handleReport`, `setIsOpen`, `setGetLastReport`, `onReportApply`, `updateTemplate`, `handleExtras`, `onEvent` as **JS properties** on the element — the SDK emits no DOM events for them |
+| `onEvent` never fires | No subscription | Set `event-subscriptions` (`eventSubscriptions` in React), e.g. `["*"]` — without it no events are delivered |
 | Boolean attributes ignored | Using boolean instead of string | Use strings: `setAttribute('isopen', 'true')`, not booleans |
+| Recording / generate button disabled, header says "Recording blocked" or "AI use refused" | Compliance rule | Your key has the minor policy set to `block` and `patientdata.birthDate` is under the threshold, or `patientdata.signedConsent.aiUse` is `'refused'`. See [Compliance Features](#compliance-features-driven-by-patient-data) |
 | Insertion preview modal never appears | Backend flag off, or no `template` | The modal is opt-in per API key — ask Omniloy to enable it. It also requires a `template`. Until enabled, reports arrive via `handleReport` |
 | Transcription doesn't start | Settings not resolved yet | The transcription URL is provided by the settings API (not `wssUrl` anymore); recording stays disabled until it resolves. Verify your `apiKey` is valid |
 

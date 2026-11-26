@@ -7,6 +7,7 @@ export const environment = {
     patientId: 'YOUR_DEFAULT_PATIENT_ID',
     templateId: 'YOUR_TEMPLATE_ID',
     userMedicalSpecialty: '',        // optional (SDK 1.0.9+) — attached to tracked events for analytics
+    hisVersion: '',                  // optional (SDK 1.0.13+) — your HIS/EMR version, sent as the x-his-version header
     language: 'es',
     isOpen: true,
     debug: true

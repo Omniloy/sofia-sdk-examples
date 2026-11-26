@@ -4,6 +4,35 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.1] - 2026-11-24
+
+### Added
+- Activity stream wired in all examples (SDK 1.0.11+): the `onEvent` callback plus the `event-subscriptions` attribute (`eventSubscriptions` prop in React), with a new **SDK Events** log and counter in every dev console
+- Optional `hisversion` attribute (SDK 1.0.13+) — the integrator's HIS/EMR version, sent as the `x-his-version` header — read from a new optional `hisVersion` field in each environment example file (`VITE_HIS_VERSION` in React)
+- README: new "Compliance Features Driven by Patient Data" section documenting the consent indicator (`patientdata.signedConsent`, including `aiUse`), the under-age policy (warn / confirm / block from `patientdata.birthDate`) and the note confirmation pop-up (insertion preview), with a pointer in every example README; `signedConsent` added to the sample patient data of the Vanilla TS, Angular and AngularJS examples
+- React: added to the Dependabot configuration
+
+### Changed
+- Updated `@omniloy/sofia-sdk` to `^1.1.1` in the bundled examples; AngularJS CDN script pinned to `@1.1.1`
+- Angular: callbacks are assigned from `ngAfterViewInit` through a `@ViewChild` reference instead of polling `document.getElementById`; `NgZone.run()` wrappers removed (the SDK calls host callbacks back inside Angular's zone); template, template ID and patient data now reach the SDK only through the `[attr.*]` bindings
+- Angular: production bundle budget raised to 14 MB (warning) / 16 MB (error) for the larger SDK bundle
+- Dev consoles: the State Monitor's "Event Count" (which counted reports) is now "Reports Received", next to the new "SDK Events" counter
+- README: the CDN snippet pins an exact version instead of `@latest`; documented `language` codes (`es`, `en_US`, `en_GB`, …)
+
+### Removed
+- Angular: `window.omniscribe*` global callbacks (removed from the SDK for security), the `handle-report` / `set-is-open` / `set-get-last-report` / `isopen-changed` DOM listeners (the SDK never emits those events), the `isopen` `MutationObserver`, and the Angular-only template summary block
+- AngularJS: the same dead DOM listeners, and the unused `@omniloy/sofia-sdk`, `angular` and `angular-route` npm dependencies (all three are loaded from CDN)
+
+## [1.0.9] - 2026-07-24
+
+### Added
+- Extras: per-category action buttons via `template-extras` (`templateExtras` in React) and the `handleExtras` callback, in all examples
+- Optional `usermedicalspecialty` attribute (all-lowercase; replaces the camelCase `userMedicalSpecialty` from 1.0.8)
+
+### Changed
+- Updated `@omniloy/sofia-sdk` to `^1.0.9` in all examples
+- Bundled examples register `<sofia-sdk>` explicitly with `customElements.define` (the package ships `sideEffects: false`)
+
 ## [1.0.8] - 2026-07-09
 
 ### Added

@@ -64,8 +64,12 @@
               <span class="status-value" id="report-handler-status">Not Available</span>
             </div>
             <div class="status-item">
-              <span class="status-label">Event Count:</span>
+              <span class="status-label">Reports Received:</span>
               <span class="status-value neutral" id="event-count">0</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">SDK Events:</span>
+              <span class="status-value neutral" id="sdk-event-count">0</span>
             </div>
           </div>
         </div>
@@ -192,6 +196,19 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- SDK Events (onEvent) -->
+        <div class="control-group">
+          <div class="tools-args-header">
+            <h3>SDK Events (onEvent)</h3>
+            <div class="tools-args-controls">
+              <button id="clear-events-btn" class="btn btn-outline">
+                Clear
+              </button>
+            </div>
+          </div>
+          <pre class="json-display" id="sdk-events-log"></pre>
         </div>
 
         <!-- Report Data -->
